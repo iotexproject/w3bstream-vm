@@ -1,6 +1,6 @@
-use std::{io::Write, collections::HashMap, sync::Arc};
+use std::{io::Write, collections::HashMap, sync::Arc, os::raw::c_char, ffi::{CString, CStr}};
 
-use libloading::Library;
+use libloading::{Library, Symbol};
 use tempfile::NamedTempFile;
 use tokio::sync::Mutex;
 use tonic::{Request, Response, Status};
@@ -56,34 +56,25 @@ impl VmRuntime for Halo2GrpcServer {
         let project = request.project;
         let param = request.param;
 
-        if param == "" {
-            return Err(Status::invalid_argument("need param"))
+        if project == "" || param == "" {
+            return Err(Status::invalid_argument("need project and param"))
         }
 
-        // let connection = &mut db::pgdb::establish_connection();
-        // let mut vm = db::models::Vm::new();
-        // let vm_result = db::pgdb::get_vm_by_project(connection, &project);
-        // match vm_result {
-        //     Ok(v) => vm = v,
-        //     Err(e) => return Err(Status::not_found(format!("{} not found", project))),
-        // };
+        let mut map = self.instances_map.lock().await;
+        let instance = match map.get_mut(&project) {
+            Some(instance) => instance,
+            None => return Err(Status::not_found("no project")),
+        };
 
-        // // param = {"private_input":"14", "public_input":"3,34", "receipt_type":"Snark"}
-        // let v: Value = serde_json::from_str(&param).unwrap();
-        // let private_input = v["private_input"].as_str().unwrap().to_string();
-        // let public_input = v["public_input"].as_str().unwrap().to_string();
-        // let receipt_type: Result<ProofType, _> = v["receipt_type"].as_str().unwrap().to_string().parse();
-        // let receipt_type = receipt_type.unwrap();
+        let receipt: String;
+        unsafe {
+            let lib_func: Symbol<unsafe extern fn(*const c_char) -> *mut c_char> = instance.get(b"w3b_prove").unwrap();
+            let input = CString::new(param).unwrap();
+            // TODO catch painc
+            let output = lib_func(input.as_ptr());
+            receipt = CStr::from_ptr(output).to_str().unwrap().to_owned();
+        }
 
-        // let receipt = get_receipt(
-        //     "name".to_string(),
-        //     "w3b".to_string(),
-        //     vm.image_id,
-        //     private_input,
-        //     public_input,
-        //     receipt_type,
-        // ).await.unwrap_or(String::from("get proof error"));
-        
-        Ok(Response::new(ExecuteResponse {result: "receipt".as_bytes().to_vec()} ))
+        Ok(Response::new(ExecuteResponse {result: receipt.as_bytes().to_vec()} ))
     }
 }
