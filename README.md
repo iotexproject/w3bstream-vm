@@ -1,1 +1,1 @@
-# halo2-serve
+# halo2-server
