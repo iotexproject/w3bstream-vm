@@ -37,7 +37,13 @@ impl VmRuntime for Halo2GrpcServer {
 
         let instance: Library;
         unsafe {
-            instance = Library::new(file.path().to_str().unwrap()).unwrap();
+            instance = match Library::new(file.path().to_str().unwrap()) {
+                Ok(ins) => ins,
+                Err(e) => {
+                    println!("instance error : {:?}", e);
+                    return Err(Status::internal("please use xx.so"))
+                },
+            };
         }
 
         let mut map = self.instances_map.lock().await;
