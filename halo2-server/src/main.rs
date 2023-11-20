@@ -1,5 +1,8 @@
-use rust_grpc::grpc::{server::Halo2GrpcServer, vm_runtime::vm_runtime_server::VmRuntimeServer};
+use grpc::server::Halo2GrpcServer;
+use rust_grpc::grpc::vm_runtime::vm_runtime_server::VmRuntimeServer;
 use tonic::transport::Server;
+
+mod grpc;
 
 // mod vm_runtime_proto {
 //     include!("grpc/vm_runtime.rs");

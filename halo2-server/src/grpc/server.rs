@@ -6,7 +6,7 @@ use tokio::sync::Mutex;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
-use super::vm_runtime::{vm_runtime_server::VmRuntime, CreateRequest, CreateResponse, ExecuteResponse, ExecuteRequest};
+use rust_grpc::grpc::vm_runtime::{vm_runtime_server::VmRuntime, CreateRequest, CreateResponse, ExecuteResponse, ExecuteRequest};
 
 
 #[derive(Debug)]
