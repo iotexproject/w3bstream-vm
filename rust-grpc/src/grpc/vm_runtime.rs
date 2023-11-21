@@ -1,24 +1,21 @@
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct CreateRequest {
-    #[prost(string, tag = "1")]
-    pub project: ::prost::alloc::string::String,
-    #[prost(bytes = "vec", tag = "2")]
-    pub content: ::prost::alloc::vec::Vec<u8>,
+    #[prost(uint64, tag = "1")]
+    pub project_id: u64,
+    #[prost(string, tag = "2")]
+    pub content: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub exp_param: ::prost::alloc::string::String,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct CreateResponse {
-    #[prost(string, tag = "1")]
-    pub instance_id: ::prost::alloc::string::String,
-}
+pub struct CreateResponse {}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ExecuteRequest {
-    #[prost(string, tag = "1")]
-    pub project: ::prost::alloc::string::String,
+    #[prost(uint64, tag = "1")]
+    pub project_id: u64,
     #[prost(string, tag = "2")]
     pub param: ::prost::alloc::string::String,
 }
