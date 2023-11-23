@@ -17,7 +17,7 @@ message CreateResponse {
  
 message ExecuteRequest {
     uint64 projectID = 1;
-    string param = 2;
+    repeated string datas = 2;
 }
 
 message ExecuteResponse {

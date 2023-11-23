@@ -31,7 +31,7 @@ function create(call, callback) {
 
 function executeOperator(call, callback) {
     const projectID = call.request.projectID;
-    const param = call.request.param;
+    const datas = call.request.datas;
 
     console.log('executor vm with projectID %d', projectID)
 
@@ -48,7 +48,7 @@ function executeOperator(call, callback) {
     wasm.setWasmBytes(bytes);
     wasm.initWasmInstance();
 
-    const result = wasm.prove(param);
+    const result = wasm.prove(JSON.stringify(datas));
     // convert result to bytes
     let resultBytes = new Uint8Array(result.length);
     for (var i = 0; i < result.length; i++) {
