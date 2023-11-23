@@ -2,7 +2,11 @@ FROM node:14
 
 WORKDIR /halo2-wasm-server
 
-COPY ./ .
+COPY proto /halo2-wasm-server/proto
+
+COPY halo2-wasm-node-server server/
+
+WORKDIR /halo2-wasm-server/server
 
 RUN npm install
 
