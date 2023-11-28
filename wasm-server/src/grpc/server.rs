@@ -2,6 +2,7 @@
 use std::io::Read;
 use std::{collections::HashMap, sync::Arc, i32::MAX};
 
+use serde_json::json;
 use tokio::sync::Mutex;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
@@ -57,10 +58,10 @@ impl VmRuntime for WasmtimeGrpcServer {
         let request = request.into_inner();
 
         let project = request.project_id;
-        let param = request.param;
+        let datas = request.datas;
 
-        if param == "" {
-            return Err(Status::invalid_argument("need project and param"))
+        if datas.len() == 0 {
+            return Err(Status::invalid_argument("need  datas"))
         }
 
         let mut map = self.instances_map.lock().await;
@@ -72,7 +73,7 @@ impl VmRuntime for WasmtimeGrpcServer {
         let rid = (Uuid::new_v4().as_u128() % (MAX as u128)) as i32;
         {
             let mut res = instance.export_funcs.res.lock().unwrap();
-            res.insert(rid, param.as_bytes().to_vec());
+            res.insert(rid, json!(&datas).to_string().as_bytes().to_vec());
         }
 
         match instance.export_funcs.rt.instantiate() {
