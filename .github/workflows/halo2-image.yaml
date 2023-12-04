@@ -2,7 +2,6 @@ name: build_halo2-wasm-node-server_image
 
 on:
   push:
-    branches: ["main"]
     tags: ["v*.*.*"]
 
 env:
