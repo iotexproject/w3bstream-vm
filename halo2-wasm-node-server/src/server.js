@@ -48,7 +48,12 @@ function executeOperator(call, callback) {
     wasm.setWasmBytes(bytes);
     wasm.initWasmInstance();
 
-    const result = wasm.prove(JSON.stringify(datas));
+    let result = wasm.prove(JSON.stringify(datas));
+    // check hex string
+    if (!isHexadecimal(result)) {
+        console.log("convert result to hex string.");
+        result = Buffer.from(result, 'utf8').toString('hex');
+    }
     // convert result to bytes
     let resultBytes = new Uint8Array(result.length);
     for (var i = 0; i < result.length; i++) {
@@ -56,6 +61,11 @@ function executeOperator(call, callback) {
     }
 
     callback(null, { result: resultBytes });
+}
+
+function isHexadecimal(str) {
+    var regexp = /^[0-9a-fA-F]+$/;
+    return regexp.test(str);
 }
 
 function startGrpcServer() {
