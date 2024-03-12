@@ -40,6 +40,9 @@ tonic = "0.8"
 tonic-reflection = "0.6.0"
 prost = "0.11"
 
+[dev-dependencies]
+lazy_static = "=1.4.0"
+
 [build-dependencies]
 tonic-build = "0.8"
 

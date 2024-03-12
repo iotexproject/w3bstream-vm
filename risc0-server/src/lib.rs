@@ -9,6 +9,8 @@ mod grpc;
 mod handlers;
 mod model;
 mod tools;
+#[cfg(test)]
+mod tests;
 
 pub async fn start_grpc_server(addr: &str) {
     let addr = addr.parse().unwrap();
