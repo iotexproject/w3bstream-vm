@@ -48,12 +48,7 @@ function executeOperator(call, callback) {
     wasm.setWasmBytes(bytes);
     wasm.initWasmInstance();
 
-    let result = wasm.prove(JSON.stringify(datas));
-    // check hex string
-    if (!isHexadecimal(result)) {
-        console.log("convert result to hex string.");
-        result = Buffer.from(result, 'utf8').toString('hex');
-    }
+    const result = wasm.prove(JSON.stringify(datas));
     // convert result to bytes
     let resultBytes = new Uint8Array(result.length);
     for (var i = 0; i < result.length; i++) {
@@ -63,21 +58,28 @@ function executeOperator(call, callback) {
     callback(null, { result: resultBytes });
 }
 
-function isHexadecimal(str) {
-    var regexp = /^[0-9a-fA-F]+$/;
-    return regexp.test(str);
-}
-
-function startGrpcServer() {
-    const server = new grpc.Server();
+let server;
+function startGrpcServer(addr) {
+    server = new grpc.Server();
     server.addService(vmRuntime.VmRuntime.service, {
         create: create,
         executeOperator: executeOperator,
     });
-    server.bindAsync('0.0.0.0:4001', grpc.ServerCredentials.createInsecure(), () => {
+    server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), () => {
         server.start();
-        console.log('Server running at http://0.0.0.0:4001');
+        console.log('Server running at http://' + addr);
     });
 }
 
-startGrpcServer()
+function stopGrpcServer() {
+    server.forceShutdown();
+}
+
+module.exports = {
+    startGrpcServer,
+    stopGrpcServer
+};
+  
+if (require.main === module) {
+    startGrpcServer('0.0.0.0:4001');
+}
