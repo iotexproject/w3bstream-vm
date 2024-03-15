@@ -7,6 +7,8 @@ mod grpc;
  
  #[tokio::main]
  async fn main() -> Result<(), Box<dyn std::error::Error>> {
+        
+    println!("{}", "start grpc server...");
     let addr = "0.0.0.0:4001".parse()?;
     let wasm_grpc_server = WasmtimeGrpcServer::default();
  

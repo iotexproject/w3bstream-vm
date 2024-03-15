@@ -26,6 +26,7 @@ impl Default for WasmtimeGrpcServer {
 #[tonic::async_trait]
 impl VmRuntime for WasmtimeGrpcServer {
     async fn create(&self, request: Request<CreateRequest>) -> Result<Response<CreateResponse>, Status> {
+        println!("wasm instance create...");
         let request = request.into_inner();
 
         let project = request.project_id;
@@ -34,12 +35,8 @@ impl VmRuntime for WasmtimeGrpcServer {
         let mut decoder = ZlibDecoder::new(&compressed_data[..]);
         let mut content = Vec::new();
         decoder.read_to_end(&mut content)?;
-        let exp_param = request.exp_param;
+        // let exp_param = request.exp_param;
 
-        // exp_param = {"image_id":"RANGE_ID", "elf":"RANGE_ELF"}
-        // if exp_param == "" {
-        //     return Err(Status::invalid_argument("need exp_param"))
-        // }
 
         let id = Uuid::new_v4();
         let instance = wasm_instance::new_instance_by_code(id, content).unwrap();
@@ -55,13 +52,14 @@ impl VmRuntime for WasmtimeGrpcServer {
     }
 
     async fn execute_operator(&self, request: Request<ExecuteRequest>) -> Result<Response<ExecuteResponse>, Status> {
+        println!("wasm instance execute...");
         let request = request.into_inner();
 
         let project = request.project_id;
         let datas = request.datas;
 
         if datas.len() == 0 {
-            return Err(Status::invalid_argument("need  datas"))
+            return Err(Status::invalid_argument("need datas"))
         }
 
         let mut map = self.instances_map.lock().await;
