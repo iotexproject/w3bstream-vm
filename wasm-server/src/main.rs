@@ -1,20 +1,8 @@
-use grpc::server::WasmtimeGrpcServer;
-use rust_grpc::grpc::vm_runtime::vm_runtime_server::VmRuntimeServer;
-use tonic::transport::Server;
+use wasm_server::start_grpc_server;
 
-mod wasmtime;
-mod grpc;
- 
  #[tokio::main]
- async fn main() -> Result<(), Box<dyn std::error::Error>> {
-        
+ async fn main() {
+    // start grpc server
     println!("{}", "start grpc server...");
-    let addr = "0.0.0.0:4001".parse()?;
-    let wasm_grpc_server = WasmtimeGrpcServer::default();
- 
-    Server::builder()
-            .add_service(VmRuntimeServer::new(wasm_grpc_server))
-            .serve(addr)
-            .await?;
-    Ok(())
+    start_grpc_server("0.0.0.0:4001").await;
  }

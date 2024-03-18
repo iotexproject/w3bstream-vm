@@ -21,3 +21,6 @@ tokio = { version = "1.24", features = ["macros", "rt-multi-thread"] }
 tokio-stream = { version = "0.1", features = ["net"] }
 flate2 = "1.0.20"
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+
+[dev-dependencies]
+lazy_static = "=1.4.0"
