@@ -26,14 +26,17 @@ async fn init_db() {
 	  );
 	DROP TABLE IF EXISTS proofs;  
 	CREATE TABLE IF NOT EXISTS proofs (
-		id SERIAL PRIMARY KEY,
-		image_id VARCHAR NOT NULL,
-		private_input VARCHAR NOT NULL,
-		public_input VARCHAR NOT NULL,
-		receipt_type VARCHAR NOT NULL,
-		receipt TEXT,
-		status VARCHAR NOT NULL,
-		create_at TIMESTAMP NOT NULL DEFAULT now()
+        id SERIAL PRIMARY KEY,
+        project_id VARCHAR NOT NULL,
+        task_id VARCHAR NOT NULL,
+        client_id VARCHAR NOT NULL,
+        sequencer_sign VARCHAR NOT NULL,
+        image_id VARCHAR NOT NULL,
+        datas_input VARCHAR NOT NULL,
+        receipt_type VARCHAR NOT NULL,
+        receipt TEXT,
+        status VARCHAR NOT NULL,
+        create_at TIMESTAMP NOT NULL DEFAULT now()
 	)"#;
     let connection = &mut db::pgdb::establish_connection();
     connection.batch_execute(init_sql).unwrap();
@@ -82,6 +85,9 @@ async fn test_create_and_execute_e2e() {
     // generate a proof
     let req = Request::new(ExecuteRequest { 
         project_id, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_sign: "test_sequencer_sign".to_string(),
         datas: vec!["{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}".to_string()],
     });
     let response = client.execute_operator(req).await;
@@ -165,6 +171,9 @@ async fn test_executor_failed_e2e() {
     // datas is nil
     let req = Request::new(ExecuteRequest { 
         project_id, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_sign: "test_sequencer_sign".to_string(),
         datas: vec![],
     });
     let response = client.execute_operator(req).await;
@@ -178,6 +187,9 @@ async fn test_executor_failed_e2e() {
     // project not found
     let req = Request::new(ExecuteRequest { 
         project_id: 99999, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_sign: "test_sequencer_sign".to_string(),
         datas: vec!["{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}".to_string()],
     });
     let response = client.execute_operator(req).await;

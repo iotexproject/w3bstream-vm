@@ -1,6 +1,7 @@
 use std::env;
 use dotenvy::dotenv;
 use anyhow::Result;
+use ethers::utils::CliqueConfig;
 
 use crate::{
     core::prove::{bonsai_prove, generate_proof_with_elf, RiscReceipt},
@@ -10,16 +11,23 @@ use crate::{
 };
 
 pub async fn get_receipt(
+    project_id: u64,
+    task_id: u64,
+    client_id: String,
+    sequencer_sign: String,
     image_id: String,
-    input_datas: String,
+    datas_input: Vec<String>,
     receipt_type: ProofType,
 ) -> Result<String, String> {
     let connection = &mut db::pgdb::establish_connection();
     let proof = db::pgdb::create_proof(
         connection,
+        &project_id.to_string(),
+        &task_id.to_string(),
+        &client_id,
+        &sequencer_sign,
         &image_id,
-        &input_datas,
-        "public_input",
+        &datas_input.join("#"),
         &receipt_type.to_string(),
         "generating",
     );
@@ -34,7 +42,7 @@ pub async fn get_receipt(
     let receipt: Result<RiscReceipt>;
     match receipt_type {
         ProofType::Stark => {
-            receipt = generate_proof_with_elf(&input_datas, &elf_cont);
+            receipt = generate_proof_with_elf(project_id, task_id, client_id, sequencer_sign, datas_input, &elf_cont);
         }
         ProofType::Snark => {
             dotenv().ok();
@@ -44,7 +52,11 @@ pub async fn get_receipt(
             // TODO
             receipt = tokio::task::spawn_blocking(move || { 
                 bonsai_prove(
-                    &input_datas,
+                    project_id,
+                    task_id,
+                    client_id,
+                    sequencer_sign,
+                    datas_input,
                     &elf_cont,
                     bonsai_url,
                     bonsai_key,

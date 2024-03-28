@@ -21,12 +21,19 @@ pub enum RiscReceipt {
 }
 
 pub fn generate_proof_with_elf(
-    input_datas: &String,
+    project_id: u64,
+    task_id: u64,
+    client_id: String,
+    sequencer_sign: String,
+    input_datas: Vec<String>,
     elf: &[u8],
 ) -> Result<RiscReceipt> {
     let env = ExecutorEnv::builder()
-        // Send private input & public input to the guest
-        .write_slice(&to_vec(input_datas).unwrap())
+        .write(&project_id).unwrap()
+        .write(&task_id).unwrap()
+        .write(&client_id).unwrap()
+        .write(&sequencer_sign).unwrap()
+        .write(&input_datas).unwrap()
         .build()
         .unwrap();
 
@@ -36,11 +43,19 @@ pub fn generate_proof_with_elf(
 
 }
 
-pub fn bonsai_prove(input_datas: &String, elf: &[u8], bonsai_url: String, bonsai_key: String) -> Result<RiscReceipt> {
+pub fn bonsai_prove(project_id: u64, task_id: u64, client_id: String, sequencer_sign: String, input_datas: Vec<String>, elf: &[u8], bonsai_url: String, bonsai_key: String) -> Result<RiscReceipt> {
 
+    let project_id = to_vec(&project_id).unwrap();
+    let task_id = to_vec(&task_id).unwrap();
+    let client_id = to_vec(&client_id).unwrap();
+    let sequencer_sign = to_vec(&sequencer_sign).unwrap();
     let inputs = to_vec(&input_datas).unwrap();
 
     let mut input_data: Vec<u8> = vec![];
+    input_data.extend_from_slice(bytemuck::cast_slice(&project_id));
+    input_data.extend_from_slice(bytemuck::cast_slice(&task_id));
+    input_data.extend_from_slice(bytemuck::cast_slice(&client_id));
+    input_data.extend_from_slice(bytemuck::cast_slice(&sequencer_sign));
     input_data.extend_from_slice(bytemuck::cast_slice(&inputs));
 
     let client = bonsai_sdk::Client::from_parts(bonsai_url, bonsai_key, risc0_zkvm::VERSION)?;

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 risc0-zkvm ={ version = "0.21" }
-bonsai-ethereum-relay = { version = "0.6.1" }
+# bonsai-ethereum-relay = { version = "0.6.1" }
 bonsai-sdk = { version = "0.7" }
 
 rust-grpc = { path = "../rust-grpc" }

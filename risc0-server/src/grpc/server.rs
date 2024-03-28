@@ -70,7 +70,9 @@ impl VmRuntime for Risc0Server {
         let request = request.into_inner();
 
         let project_id = request.project_id;
-        let project = project_id.to_string();
+        let task_id = request.task_id;
+        let client_id = request.client_id;
+        let sequencer_sign = request.sequencer_sign;
         let datas = request.datas;
 
         if datas.len() == 0 {
@@ -78,14 +80,14 @@ impl VmRuntime for Risc0Server {
         }
 
         let connection = &mut db::pgdb::establish_connection();
-        let image_id = match db::pgdb::get_vm_by_project(connection, &project) {
+        let image_id = match db::pgdb::get_vm_by_project(connection, &project_id.to_string()) {
             Ok(v) => v.image_id,
-            Err(_) => return Err(Status::not_found(format!("{} not found", project))),
+            Err(_) => return Err(Status::not_found(format!("{} not found", project_id.to_string()))),
         };
 
         // TODO move to guest method
         // param = {"private_input":"14", "public_input":"3,34", "receipt_type":"Snark"}
-        let input_datas = json!(datas).to_string();
+        // let input_datas = json!(datas).to_string();
         let v: Value = serde_json::from_str(&datas[0]).unwrap();
         let mut receipt_type = ProofType::from_str("Snark").unwrap();
         // TODO check v
@@ -97,8 +99,12 @@ impl VmRuntime for Risc0Server {
         // let receipt_type = receipt_type.unwrap();
 
         let receipt = match get_receipt(
+            project_id,
+            task_id,
+            client_id,
+            sequencer_sign,
             image_id,
-            input_datas,
+            datas,
             receipt_type,
         )
         .await

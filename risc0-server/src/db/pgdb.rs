@@ -55,16 +55,19 @@ pub fn get_vm_by_project<'a>(conn: &mut PgConnection, project: &'a str) -> Resul
     Ok(vm)
 }
 
-pub fn create_proof<'a>(conn: &mut PgConnection, id_str: &'a str, 
-                            pri_input: &'a str, pub_input: &'a str, receipt_tye: &'a str, proof_status: &'a str) -> Proof {
+pub fn create_proof<'a>(conn: &mut PgConnection, project_id: &'a str, task_id: &'a str, client_id: &'a str, sequencer_sign: &'a str, image_id: &'a str, 
+                            datas_input: &'a str, receipt_type: &'a str, status: &'a str) -> Proof {
     use crate::db::schema::proofs;
 
     let new_proof = NewPoof {
-        image_id: id_str,
-        private_input: pri_input,
-        public_input: pub_input,
-        receipt_type: receipt_tye,
-        status: proof_status,
+        project_id,
+        task_id,
+        client_id,
+        sequencer_sign,
+        image_id,
+        datas_input,
+        receipt_type,
+        status,
     };
 
     diesel::insert_into(proofs::table)
