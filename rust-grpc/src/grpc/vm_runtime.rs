@@ -16,7 +16,13 @@ pub struct CreateResponse {}
 pub struct ExecuteRequest {
     #[prost(uint64, tag = "1")]
     pub project_id: u64,
-    #[prost(string, repeated, tag = "2")]
+    #[prost(uint64, tag = "2")]
+    pub task_id: u64,
+    #[prost(string, tag = "3")]
+    pub client_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub sequencer_sign: ::prost::alloc::string::String,
+    #[prost(string, repeated, tag = "5")]
     pub datas: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
