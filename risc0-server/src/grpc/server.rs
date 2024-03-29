@@ -114,7 +114,7 @@ impl VmRuntime for Risc0Server {
         };
 
         Ok(Response::new(ExecuteResponse {
-            result: hex::encode(receipt).as_bytes().to_vec(),
+            result: receipt.as_bytes().to_vec(),
         }))
     }
 }
