@@ -30,7 +30,7 @@ describe('VmRuntime Service', function() {
   });
 
   it('should execute operator successfully', function(done) {
-    client.executeOperator(addr, {projectID: 10001, datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
+    client.executeOperator(addr, {projectID: 10001, taskID: 0, clientID: "clientID", sequencerSign: "sequencerSign", datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
         assert.strictEqual(err, null);
         assert.notStrictEqual(response.result.toString(), null);
         done();
@@ -38,7 +38,7 @@ describe('VmRuntime Service', function() {
   });
 
   it('project not found', function(done) {
-    client.executeOperator(addr, {projectID: 99999, datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
+    client.executeOperator(addr, {projectID: 99999,taskID: 0, clientID: "clientID", sequencerSign: "sequencerSign", datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
         assert.ok(err.message.includes("projectID '99999' does not exist in the halo2 vm."));
         done();
     });

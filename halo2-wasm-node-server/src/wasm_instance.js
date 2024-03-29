@@ -115,25 +115,33 @@ function getInt32Memory0() {
     return cachedInt32Memory0;
 }
 /**
+* @param {bigint} project_id
+* @param {bigint} task_id
+* @param {string} client_id
+* @param {string} sequencer_sign
 * @param {string} input
 * @returns {string}
 */
-module.exports.prove = function(input) {
-    let deferred2_0;
-    let deferred2_1;
+module.exports.prove = function(project_id, task_id, client_id, sequencer_sign, input) {
+    let deferred4_0;
+    let deferred4_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        const ptr0 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const ptr0 = passStringToWasm0(client_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        wasm.prove(retptr, ptr0, len0);
+        const ptr1 = passStringToWasm0(sequencer_sign, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        wasm.prove(retptr, project_id, task_id, ptr0, len0, ptr1, len1, ptr2, len2);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
-        deferred2_0 = r0;
-        deferred2_1 = r1;
+        deferred4_0 = r0;
+        deferred4_1 = r1;
         return getStringFromWasm0(r0, r1);
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 };
 
@@ -144,10 +152,6 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-
-module.exports.__wbg_log_02257a54245b2f2e = function(arg0, arg1) {
-    console.log(getStringFromWasm0(arg0, arg1));
-};
 
 module.exports.__wbg_crypto_58f13aa23ffcb166 = function(arg0) {
     const ret = getObject(arg0).crypto;
