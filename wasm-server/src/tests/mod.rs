@@ -54,6 +54,9 @@ async fn test_create_and_execute_e2e() {
     // generate a proof
     let req = Request::new(ExecuteRequest { 
         project_id, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec!["wasm log example".to_string()],
     });
     let response = client.execute_operator(req).await;
@@ -153,6 +156,9 @@ async fn test_executor_failed_e2e() {
     // datas is nil
     let req = Request::new(ExecuteRequest { 
         project_id, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec![],
     });
     let response = client.execute_operator(req).await;
@@ -166,6 +172,9 @@ async fn test_executor_failed_e2e() {
     // project not found
     let req = Request::new(ExecuteRequest { 
         project_id: 99999, 
+        task_id: 0u64,
+        client_id: "test_client_id".to_string(),
+        sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec!["wasm log example".to_string()],
     });
     let response = client.execute_operator(req).await;

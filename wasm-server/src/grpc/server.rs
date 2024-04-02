@@ -55,7 +55,10 @@ impl VmRuntime for WasmtimeGrpcServer {
         println!("wasm instance execute...");
         let request = request.into_inner();
 
-        let project = request.project_id;
+        let project_id = request.project_id;
+        let task_id = request.task_id;
+        let client_id = request.client_id;
+        let sequencer_signature = request.sequencer_signature;
         let datas = request.datas;
 
         if datas.len() == 0 {
@@ -63,7 +66,7 @@ impl VmRuntime for WasmtimeGrpcServer {
         }
 
         let mut map = self.instances_map.lock().await;
-        let instance = match map.get_mut(&project) {
+        let instance = match map.get_mut(&project_id) {
             Some(instance) => instance,
             None => return Err(Status::not_found("no project")),
         };
