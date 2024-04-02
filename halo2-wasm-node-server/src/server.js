@@ -33,7 +33,7 @@ function executeOperator(call, callback) {
     const projectID = call.request.projectID;
     const taskID = call.request.taskID;
     const clientID = call.request.clientID;
-    const sequencerSign = call.request.sequencerSign;
+    const sequencerSignature = call.request.sequencerSignature;
     const datas = call.request.datas;
 
     console.log('executor vm with projectID %d', projectID)
@@ -51,7 +51,7 @@ function executeOperator(call, callback) {
     wasm.setWasmBytes(bytes);
     wasm.initWasmInstance();
 
-    const result = wasm.prove(projectID, taskID, clientID, sequencerSign, JSON.stringify(datas));
+    const result = wasm.prove(projectID, taskID, clientID, sequencerSignature, JSON.stringify(datas));
     // convert result to bytes
     let resultBytes = new Uint8Array(result.length);
     for (var i = 0; i < result.length; i++) {

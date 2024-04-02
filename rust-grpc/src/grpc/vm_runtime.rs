@@ -21,7 +21,7 @@ pub struct ExecuteRequest {
     #[prost(string, tag = "3")]
     pub client_id: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
-    pub sequencer_sign: ::prost::alloc::string::String,
+    pub sequencer_signature: ::prost::alloc::string::String,
     #[prost(string, repeated, tag = "5")]
     pub datas: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
 }

@@ -72,7 +72,7 @@ impl VmRuntime for Risc0Server {
         let project_id = request.project_id;
         let task_id = request.task_id;
         let client_id = request.client_id;
-        let sequencer_sign = request.sequencer_sign;
+        let sequencer_signature = request.sequencer_signature;
         let datas = request.datas;
 
         if datas.len() == 0 {
@@ -102,7 +102,7 @@ impl VmRuntime for Risc0Server {
             project_id,
             task_id,
             client_id,
-            sequencer_sign,
+            sequencer_signature,
             image_id,
             datas,
             receipt_type,
