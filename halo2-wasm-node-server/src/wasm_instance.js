@@ -153,6 +153,10 @@ function handleError(f, args) {
     }
 }
 
+module.exports.__wbg_log_d95057db93b45721 = function(arg0, arg1) {
+    console.log(getStringFromWasm0(arg0, arg1));
+};
+
 module.exports.__wbg_crypto_58f13aa23ffcb166 = function(arg0) {
     const ret = getObject(arg0).crypto;
     return addHeapObject(ret);
