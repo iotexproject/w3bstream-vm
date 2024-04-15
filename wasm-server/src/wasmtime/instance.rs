@@ -52,8 +52,6 @@ impl Runtime {
 
     pub fn call(&mut self, name: &str, rid: i32) -> Result<i32> {
 
-        // self.instance.as_ref().unwrap().get_func(self.store.as_mut().unwrap(), name);
-
         let start_func = self.instance.as_ref().unwrap().get_typed_func::<i32, i32>(self.store.as_mut().unwrap(), name)?;
         let result = start_func.call(self.store.as_mut().unwrap(), rid);
         

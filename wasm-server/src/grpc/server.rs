@@ -71,10 +71,18 @@ impl VmRuntime for WasmtimeGrpcServer {
             None => return Err(Status::not_found("no project")),
         };
 
+        let mut map = HashMap::new();
+        map.insert("project_id",  json!(project_id));
+        map.insert("task_id",  json!(task_id));
+        map.insert("client_id",  json!(client_id));
+        map.insert("sequencer_signature",  json!(sequencer_signature));
+        map.insert("datas",  json!(datas));
+
         let rid = (Uuid::new_v4().as_u128() % (MAX as u128)) as i32;
         {
             let mut res = instance.export_funcs.res.lock().unwrap();
-            res.insert(rid, json!(&datas).to_string().as_bytes().to_vec());
+            // res.insert(rid, json!(&datas).to_string().as_bytes().to_vec());
+            res.insert(rid, serde_json::to_string(&map).unwrap().as_bytes().to_vec());
         }
 
         match instance.export_funcs.rt.instantiate() {
