@@ -19,7 +19,7 @@ futures = "0.3"
 tokio-stream = "0.1"
 headers = "0.3"
 tracing = "0.1"
-tracing-subscriber = { version="0.3", features = ["env-filter"] }
+tracing-subscriber = { version="0.3", features = ["env-filter", "tracing-log", "fmt"] }
 axum_typed_multipart = "0.8.0"
 tempfile = "3.7.1"
 

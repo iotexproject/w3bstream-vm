@@ -16,8 +16,15 @@ pub async fn start_grpc_server(addr: &str) {
     let addr = addr.parse().unwrap();
     let risc0_server = Risc0Server{};
  
+    tracing_subscriber::fmt()
+    .with_max_level(tracing::Level::DEBUG)
+    .init();
+
+    tracing::info!(message = "Starting server.", %addr);
+
     Server::builder()
-            .add_service(VmRuntimeServer::new(risc0_server))
-            .serve(addr)
-            .await.unwrap();
+        .trace_fn(|_| tracing::info_span!("helloworld_server"))
+        .add_service(VmRuntimeServer::new(risc0_server))
+        .serve(addr)
+        .await.unwrap();
 }
