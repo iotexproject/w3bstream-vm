@@ -7,7 +7,7 @@ RUN apt install -y curl libpq-dev libssl-dev libpq-dev librust-openssl-dev libru
 RUN apt -y install libpq5
 RUN apt update && apt install -y libprotobuf-dev protobuf-compiler
 
-RUN cargo install diesel_cli --no-default-features --features postgres
+RUN cargo install diesel_cli --no-default-features --features postgres --version 2.1.0
 
 RUN curl -L https://foundry.paradigm.xyz | bash
 RUN /root/.foundry/bin/foundryup
