@@ -23,7 +23,7 @@ pub async fn start_grpc_server(addr: &str) {
     tracing::info!(message = "Starting server.", %addr);
 
     Server::builder()
-        .trace_fn(|_| tracing::info_span!("helloworld_server"))
+        .trace_fn(|_| tracing::info_span!("risc0_server"))
         .add_service(VmRuntimeServer::new(risc0_server))
         .serve(addr)
         .await.unwrap();
