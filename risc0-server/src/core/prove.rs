@@ -39,7 +39,7 @@ pub fn generate_proof_with_elf(
 
     // Obtain the default prover.
     let prover = default_prover();
-    Ok(RiscReceipt::Stark(prover.prove(env, elf).unwrap()))
+    Ok(RiscReceipt::Stark(prover.prove(env, elf).unwrap().receipt))
 
 }
 
