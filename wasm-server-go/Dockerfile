@@ -5,11 +5,11 @@ ENV GO111MODULE=on
 WORKDIR /go/src
 COPY ./ ./
 
-RUN cd ./cmd && go build -o wasm-server-go
+RUN cd ./wasm-server-go/cmd && go build -o wasm-server-go
 
-FROM scratch AS runtime
+FROM golang:1.21 AS runtime
 
-COPY --from=builder /go/src/cmd/wasm-server-go /go/bin/wasm-server-go
+COPY --from=builder /go/src/wasm-server-go/cmd/wasm-server-go /go/bin/wasm-server-go
 EXPOSE 4001
 
 WORKDIR /go/bin
