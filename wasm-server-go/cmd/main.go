@@ -57,10 +57,10 @@ func (s *server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	id := uuid.NewString()
 	ins, err := vm.NewInstance(ctx, contentBytes, id)
 
-	if _, exists := s.data.Load(projectId); exists {
-		return nil, errors.New(fmt.Sprintf("instance for project ID %d already exists", req.ProjectID))
-	}
-	s.data.Store(req.ProjectID, ins)
+	//if _, exists := s.data.Load(projectId); exists {
+	//	return nil, errors.New(fmt.Sprintf("instance for project ID %d already exists", req.ProjectID))
+	//}
+	s.data.Store(projectId, ins)
 
 	return &pb.CreateResponse{}, nil
 }
