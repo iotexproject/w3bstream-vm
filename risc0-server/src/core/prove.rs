@@ -1,7 +1,11 @@
 use core::time::Duration;
 
+use ethers::{
+    abi::{Token, Tokenizable},
+    types::U256,
+};
 use risc0_zkvm::{
-    compute_image_id, default_prover, serde::to_vec, ExecutorEnv, Receipt
+    compute_image_id, default_prover, serde::to_vec, ExecutorEnv, Groth16Seal, Receipt
 };
 
 use ::bonsai_sdk::alpha::responses::SnarkReceipt;
@@ -139,4 +143,43 @@ pub fn bonsai_prove(project_id: u64, task_id: u64, client_id: String, sequencer_
         }
     })()?;
     Ok(RiscReceipt::Snark(snark_receipt))
+}
+
+pub fn tokenize_snark_receipt(seal: &Groth16Seal) -> anyhow::Result<Token> {
+    if seal.b.len() != 2 {
+        anyhow::bail!("hex-strings encoded Groth16 seal is not well formed");
+    }
+    for pair in [&seal.a, &seal.c].into_iter().chain(seal.b.iter()) {
+        if pair.len() != 2 {
+            anyhow::bail!("hex-strings encoded Groth16 seal is not well formed");
+        }
+    }
+    Ok(Token::FixedArray(vec![
+        Token::FixedArray(
+            seal.a
+                .iter()
+                .map(|elm| U256::from_big_endian(elm).into_token())
+                .collect(),
+        ),
+        Token::FixedArray(vec![
+            Token::FixedArray(
+                seal.b[0]
+                    .iter()
+                    .map(|elm| U256::from_big_endian(elm).into_token())
+                    .collect(),
+            ),
+            Token::FixedArray(
+                seal.b[1]
+                    .iter()
+                    .map(|elm| U256::from_big_endian(elm).into_token())
+                    .collect(),
+            ),
+        ]),
+        Token::FixedArray(
+            seal.c
+                .iter()
+                .map(|elm| U256::from_big_endian(elm).into_token())
+                .collect(),
+        ),
+    ]))
 }
