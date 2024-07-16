@@ -3,10 +3,12 @@ use std::{io::Read, str::FromStr};
 use ethers::abi::{encode, Token};
 use flate2::read::ZlibDecoder;
 use hex::FromHex;
+use risc0_zkvm::{InnerReceipt, Receipt};
 use serde_json::Value;
 use tonic::{Request, Response, Status};
+use risc0_ethereum_contracts::groth16;
 
-use crate::{core::prove::{tokenize_snark_receipt, RiscReceipt}, db, handlers::proof::get_receipt, model::models::ProofType};
+use crate::{db, handlers::proof::get_receipt, model::models::ProofType};
 
 use rust_grpc::grpc::vm_runtime::{vm_runtime_server::VmRuntime, CreateRequest, CreateResponse, ExecuteRequest, ExecuteResponse};
 
@@ -115,23 +117,22 @@ impl VmRuntime for Risc0Server {
         };
 
         println!("{:?}", receipt);
-        let risc_receipt: RiscReceipt = serde_json::from_str(&receipt).unwrap();
-        let result = match risc_receipt {
-            RiscReceipt::Stark(_) => receipt.as_bytes().to_vec(),
-            RiscReceipt::Snark(snark_receipt) => {
+        let mut result = receipt.as_bytes().to_vec();
+        let risc_receipt: Receipt = serde_json::from_str(&receipt).unwrap();
+        if matches!(risc_receipt.inner, InnerReceipt::Groth16(_)) {
+            let seal = groth16::encode(risc_receipt.inner.groth16().unwrap().seal.clone()).unwrap();
+            // println!("seal {}", format!("0x{}", hex::encode(seal.clone())));
+            let journal = risc_receipt.journal.bytes.clone();
+            // println!("journal {}", format!("0x{}", hex::encode(journal.clone())));
+
                 let tokens = vec![
-                    Token::Bytes(ethers::abi::encode(&[tokenize_snark_receipt(
-                        &snark_receipt.snark,
-                    ).unwrap()])),
-                    Token::FixedBytes(snark_receipt.post_state_digest),
-                    Token::Bytes(snark_receipt.journal),
+                    Token::Bytes(seal),
+                    Token::Bytes(journal),
                 ];
 
-                let packed = encode(&tokens);
-                println!("bytes_calldata_journal {}", format!("0x{}", hex::encode(packed.clone())));
-                packed
-            },
-        };
+                result = encode(&tokens);
+                // println!("bytes_seal_journal {}", format!("0x{}", hex::encode(result.clone())));
+        }
 
         Ok(Response::new(ExecuteResponse {
             result,
@@ -141,27 +142,28 @@ impl VmRuntime for Risc0Server {
 
 #[test]
 fn param() {
-    let receipt = "{\"Snark\":{\"snark\":{\"a\":[[15,155,252,242,9,26,124,151,21,24,211,115,131,235,68,49,209,28,150,199,46,118,241,255,86,226,68,209,109,120,35,47],[33,224,18,148,206,102,224,66,80,117,215,130,118,55,94,179,94,53,212,116,5,165,226,142,248,241,141,130,52,35,128,67]],\"b\":[[[16,14,32,254,8,24,79,65,20,193,148,13,1,193,112,205,28,92,131,221,156,231,2,188,232,168,3,189,210,208,39,20],[4,31,195,116,249,130,44,45,124,142,249,191,172,22,136,236,220,245,163,164,21,15,24,220,91,173,156,126,103,197,98,115]],[[26,214,251,166,96,158,106,222,67,205,64,40,182,73,164,129,7,146,142,253,159,248,80,22,165,21,222,64,120,62,244,243],[10,60,178,134,188,178,36,3,72,198,206,165,155,20,0,86,254,87,96,235,186,172,122,29,229,115,250,116,43,187,20,164]]],\"c\":[[31,3,43,201,153,47,46,183,184,221,113,155,168,84,59,207,53,46,26,38,144,251,214,34,246,45,255,46,134,131,56,252],[35,27,218,215,220,204,109,38,61,166,87,219,101,49,152,114,107,170,246,58,197,73,58,45,158,181,73,124,182,253,198,6]]},\"post_state_digest\":[163,172,194,113,23,65,137,150,52,11,132,229,169,15,62,244,196,157,34,199,158,68,170,216,34,236,156,49,62,30,184,226],\"journal\":[82,0,0,0,73,32,107,110,111,119,32,121,111,117,114,32,112,114,105,118,97,116,101,32,105,110,112,117,116,32,105,115,32,103,114,101,97,116,101,114,32,116,104,97,110,32,49,49,32,97,110,100,32,108,101,115,115,32,116,104,97,110,32,52,51,44,32,97,110,100,32,73,32,99,97,110,32,112,114,111,118,101,32,105,116,33,0,0]}}";
+    let receipt = "{\"inner\":{\"Groth16\":{\"seal\":[13,130,138,212,74,234,176,239,95,29,228,225,143,171,188,84,199,197,244,148,214,38,199,17,199,58,134,101,217,241,136,201,12,22,9,213,157,120,249,214,255,96,0,200,170,149,120,109,143,229,183,161,226,83,220,46,139,2,50,113,217,0,187,186,47,205,143,50,147,175,156,184,200,208,39,186,129,20,149,87,98,224,66,93,24,245,84,67,67,81,183,244,100,51,144,189,18,149,157,185,195,219,178,223,162,234,214,12,219,208,23,44,21,3,90,125,93,114,77,34,109,20,69,101,59,212,158,7,8,118,175,66,105,237,183,63,191,203,227,40,40,215,38,212,214,1,47,97,188,60,124,142,116,128,113,135,4,47,141,194,16,214,58,85,109,62,206,209,79,51,245,98,179,153,217,229,235,72,105,61,144,182,7,95,192,149,159,8,152,218,246,235,42,107,65,59,55,111,1,209,243,208,74,120,248,240,155,215,124,207,189,31,221,94,179,134,199,130,187,202,254,49,2,181,31,205,80,114,104,112,98,188,156,219,152,234,30,6,141,109,111,194,112,12,58,16,53,191,130,8,192,148,245,77,216,35],\"claim\":{\"Value\":{\"pre\":{\"Value\":{\"pc\":2131092,\"merkle_root\":[257142831,212867192,3019768776,4077566949,3774766206,1955124911,2139138887,437463669]}},\"post\":{\"Value\":{\"pc\":0,\"merkle_root\":[0,0,0,0,0,0,0,0]}},\"exit_code\":{\"Halted\":0},\"input\":{\"Pruned\":[0,0,0,0,0,0,0,0]},\"output\":{\"Value\":{\"journal\":{\"Value\":[82,0,0,0,73,32,107,110,111,119,32,121,111,117,114,32,112,114,105,118,97,116,101,32,105,110,112,117,116,32,105,115,32,103,114,101,97,116,101,114,32,116,104,97,110,32,49,49,32,97,110,100,32,108,101,115,115,32,116,104,97,110,32,52,51,44,32,97,110,100,32,73,32,99,97,110,32,112,114,111,118,101,32,105,116,33,0,0]},\"assumptions\":{\"Value\":[]}}}}},\"verifier_parameters\":[2565148465,803857384,666633640,2019065645,1753987992,2480395716,2877601933,1558279850]}},\"journal\":{\"bytes\":[82,0,0,0,73,32,107,110,111,119,32,121,111,117,114,32,112,114,105,118,97,116,101,32,105,110,112,117,116,32,105,115,32,103,114,101,97,116,101,114,32,116,104,97,110,32,49,49,32,97,110,100,32,108,101,115,115,32,116,104,97,110,32,52,51,44,32,97,110,100,32,73,32,99,97,110,32,112,114,111,118,101,32,105,116,33,0,0]},\"metadata\":{\"verifier_parameters\":[2565148465,803857384,666633640,2019065645,1753987992,2480395716,2877601933,1558279850]}}";
     println!("{:?}", receipt);
-    let risc_receipt: RiscReceipt = serde_json::from_str(&receipt).unwrap();
+    let risc_receipt: Receipt = serde_json::from_str(&receipt).unwrap();
     println!("{:?}", risc_receipt);
-    match risc_receipt {
-        RiscReceipt::Stark(_) => todo!(),
-        RiscReceipt::Snark(snark_receipt) => {
-// bytes_memory_seal "0x07a0ccc0b07afce3eea573a3ac5fe40c640792d62bc9639da826ece65dfb7c1714eca637538e88554970cd9f5c645798fd7e12713eed8dd09a7aaa36895417511c690d1c3d10092f26b46af71836273932595e33192ce277a4d0406a7068e7442ba2a0a365b67efd7622bdd0291c934104b61272a27ac5431c6f61a19fc7256e02a84066ddc37f3d826b3f6c51c04e8f03672d6f8835c63fe4bb3c83d79286a11140900f46e946b2ca4e373c2681862fe8526d8371d0edd3f28a92fc414c628014f9eb8a84c582295163b0e33731775f22b72fec0931a0fe6e502f6e1169155917114e868efa132410d817938abc55da64081661296fa4acc0d7ebe05322d5e6"
-// bytes32_post_state_digest 0x3b858303e7b1760b1f33353348638aed27c00d9198374fd2991c40c61afbea75
-// bytes_calldata_journal 0x5100000049206b6e6f7720796f7572207072697661746520696e7075742069732067726561746572207468616e203320616e64206c657373207468616e2033342c20616e6420492063616e2070726f766520697421000000
+    match risc_receipt.inner {
+        InnerReceipt::Groth16(_) => {
+            let seal = groth16::encode(risc_receipt.inner.groth16().unwrap().seal.clone()).unwrap();
+            println!("seal {}", format!("0x{}", hex::encode(seal.clone())));
+            let journal = risc_receipt.journal.bytes.clone();
+            println!("journal {}", format!("0x{}", hex::encode(journal.clone())));
 
-            let tokens = vec![
-                Token::Bytes(ethers::abi::encode(&[tokenize_snark_receipt(
-                    &snark_receipt.snark,
-                ).unwrap()])),
-                Token::FixedBytes(snark_receipt.post_state_digest),
-                Token::Bytes(snark_receipt.journal),
-            ];
+                let tokens = vec![
+                    Token::Bytes(seal),
+                    Token::Bytes(journal),
+                ];
 
-            let packed = encode(&tokens);
-            println!("packed {}", format!("0x{}", hex::encode(packed)));
+                let result = encode(&tokens);
+                println!("bytes_seal_journal {}", format!("0x{}", hex::encode(result.clone())));
         },
+        InnerReceipt::Composite(_) => todo!(),
+        InnerReceipt::Succinct(_) => todo!(),
+        InnerReceipt::Fake(_) => todo!(),
+        _ => todo!(),
     }
 }

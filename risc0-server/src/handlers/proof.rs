@@ -1,10 +1,10 @@
 use std::env;
 use dotenvy::dotenv;
 use anyhow::Result;
-use ethers::utils::CliqueConfig;
+use risc0_zkvm::Receipt;
 
 use crate::{
-    core::prove::{bonsai_prove, generate_proof_with_elf, RiscReceipt},
+    core::prove::{bonsai_groth16_prove_with_env, generate_proof_with_elf},
     db::{self},
     model::models::ProofType,
     tools::parse_elf_from_str,
@@ -39,7 +39,7 @@ pub async fn get_receipt(
     }
     let elf_cont: Vec<u8> = parse_elf_from_str(&vm.elf);
 
-    let receipt: Result<RiscReceipt>;
+    let receipt: Result<Receipt>;
     match receipt_type {
         ProofType::Stark => {
             receipt = generate_proof_with_elf(project_id, task_id, client_id, sequencer_sign, datas_input, &elf_cont);
@@ -51,7 +51,7 @@ pub async fn get_receipt(
             let bonsai_key = env::var("BONSAI_KEY").expect("BONSAI_KEY must be set");
             // TODO
             receipt = tokio::task::spawn_blocking(move || { 
-                bonsai_prove(
+                bonsai_groth16_prove_with_env(
                     project_id,
                     task_id,
                     client_id,
