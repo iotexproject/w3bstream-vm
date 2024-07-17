@@ -121,17 +121,14 @@ impl VmRuntime for Risc0Server {
         let risc_receipt: Receipt = serde_json::from_str(&receipt).unwrap();
         if matches!(risc_receipt.inner, InnerReceipt::Groth16(_)) {
             let seal = groth16::encode(risc_receipt.inner.groth16().unwrap().seal.clone()).unwrap();
-            // println!("seal {}", format!("0x{}", hex::encode(seal.clone())));
             let journal = risc_receipt.journal.bytes.clone();
-            // println!("journal {}", format!("0x{}", hex::encode(journal.clone())));
 
-                let tokens = vec![
-                    Token::Bytes(seal),
-                    Token::Bytes(journal),
-                ];
+            let tokens = vec![
+                Token::Bytes(seal),
+                Token::Bytes(journal),
+            ];
 
-                result = encode(&tokens);
-                // println!("bytes_seal_journal {}", format!("0x{}", hex::encode(result.clone())));
+            result = encode(&tokens);
         }
 
         Ok(Response::new(ExecuteResponse {
