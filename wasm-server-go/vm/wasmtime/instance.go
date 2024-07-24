@@ -10,7 +10,7 @@ import (
 	"github.com/bytecodealliance/wasmtime-go/v8"
 	"github.com/google/uuid"
 
-	"github.com/machinefi/sprout-vm/wasm-server-go/type/wasm"
+	"github.com/iotexproject/sprout-vm/wasm-server-go/type/wasm"
 )
 
 const (

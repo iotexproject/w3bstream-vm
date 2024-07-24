@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/machinefi/sprout-vm/wasm-server-go/type/wasm"
+	"github.com/iotexproject/sprout-vm/wasm-server-go/type/wasm"
 )
 
 type (

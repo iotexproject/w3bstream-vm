@@ -18,9 +18,9 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	pb "github.com/machinefi/sprout-vm/wasm-server-go/proto"
-	"github.com/machinefi/sprout-vm/wasm-server-go/type/wasm"
-	"github.com/machinefi/sprout-vm/wasm-server-go/vm"
+	pb "github.com/iotexproject/sprout-vm/wasm-server-go/proto"
+	"github.com/iotexproject/sprout-vm/wasm-server-go/type/wasm"
+	"github.com/iotexproject/sprout-vm/wasm-server-go/vm"
 )
 
 type server struct {
@@ -65,7 +65,7 @@ func (s *server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 	return &pb.CreateResponse{}, nil
 }
 
-func (s *server) ExecuteOperator(ctx context.Context, req *pb.ExecuteRequest) (*pb.ExecuteResponse, error) {
+func (s *server) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.ExecuteResponse, error) {
 	slog.Info("wasm instance execute request: %v", req)
 
 	data := map[string]interface{}{

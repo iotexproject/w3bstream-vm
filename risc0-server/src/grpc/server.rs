@@ -65,7 +65,7 @@ impl VmRuntime for Risc0Server {
         Ok(Response::new(CreateResponse {}))
     }
 
-    async fn execute_operator(
+    async fn execute(
         &self,
         request: Request<ExecuteRequest>,
     ) -> Result<Response<ExecuteResponse>, Status> {

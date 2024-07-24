@@ -29,7 +29,7 @@ function create(call, callback) {
     callback(null, {});
 }
 
-function executeOperator(call, callback) {
+function execute(call, callback) {
     const projectID = call.request.projectID;
     const taskID = call.request.taskID;
     const clientID = call.request.clientID;
@@ -67,7 +67,7 @@ function startGrpcServer(addr) {
     server = new grpc.Server();
     server.addService(vmRuntime.VmRuntime.service, {
         create: create,
-        executeOperator: executeOperator,
+        execute: execute,
     });
     server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), () => {
         server.start();

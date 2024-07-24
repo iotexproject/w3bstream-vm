@@ -60,7 +60,7 @@ async fn test_create_and_execute_e2e() {
         sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec!["wasm log example".to_string()],
     });
-    let response = client.execute_operator(req).await;
+    let response = client.execute(req).await;
     match response {
         Ok(_) => assert!(true),
         Err(err) => {
@@ -162,7 +162,7 @@ async fn test_executor_failed_e2e() {
         sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec![],
     });
-    let response = client.execute_operator(req).await;
+    let response = client.execute(req).await;
     match response {
         Ok(_) => (),
         Err(err) => {
@@ -178,7 +178,7 @@ async fn test_executor_failed_e2e() {
         sequencer_signature: "test_sequencer_sign".to_string(),
         datas: vec!["wasm log example".to_string()],
     });
-    let response = client.execute_operator(req).await;
+    let response = client.execute(req).await;
     match response {
         Ok(_) => (),
         Err(err) => {

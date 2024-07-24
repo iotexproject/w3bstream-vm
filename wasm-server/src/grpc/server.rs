@@ -51,7 +51,7 @@ impl VmRuntime for WasmtimeGrpcServer {
         Ok(Response::new(CreateResponse {}))
     }
 
-    async fn execute_operator(&self, request: Request<ExecuteRequest>) -> Result<Response<ExecuteResponse>, Status> {
+    async fn execute(&self, request: Request<ExecuteRequest>) -> Result<Response<ExecuteResponse>, Status> {
         println!("wasm instance execute...");
         let request = request.into_inner();
 

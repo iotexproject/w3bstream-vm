@@ -19,10 +19,10 @@ function create(addr, request, callback) {
     client.create(request, callback);                                           
   }
   
-function executeOperator(addr, request, callback) {
+function execute(addr, request, callback) {
     const client = new vmRuntime.VmRuntime(addr,
                                            grpc.credentials.createInsecure());
-    client.executeOperator(request, callback);
+    client.execute(request, callback);
 }
 
 if (require.main === module) {
@@ -43,17 +43,17 @@ if (require.main === module) {
 
         console.log('create vm instance:', response);
 
-        executeOperator('0.0.0.0:4001', {projectID: 1, datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
+        execute('0.0.0.0:4001', {projectID: 1, datas: ['{\"private_a\": 3, \"private_b\": 5}']}, function(err, response) {
             if (err) {
-                console.error('Error during ExecuteOperator:', err);
+                console.error('Error during Execute:', err);
                 return;
             }
-            console.log('ExecuteOperator Response:', response.result.toString());
+            console.log('Execute Response:', response.result.toString());
         })
     });
 }
 
 module.exports = {
     create,
-    executeOperator
+    execute
 };

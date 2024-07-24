@@ -1,4 +1,4 @@
-module github.com/machinefi/sprout-vm/wasm-server-go
+module github.com/iotexproject/sprout-vm/wasm-server-go
 
 go 1.21.4
 

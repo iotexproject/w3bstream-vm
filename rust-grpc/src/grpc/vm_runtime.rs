@@ -119,7 +119,7 @@ pub mod vm_runtime_client {
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
-        pub async fn execute_operator(
+        pub async fn execute(
             &mut self,
             request: impl tonic::IntoRequest<super::ExecuteRequest>,
         ) -> Result<tonic::Response<super::ExecuteResponse>, tonic::Status> {
@@ -134,7 +134,7 @@ pub mod vm_runtime_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/vm_runtime.VmRuntime/ExecuteOperator",
+                "/vm_runtime.VmRuntime/Execute",
             );
             self.inner.unary(request.into_request(), path, codec).await
         }
@@ -151,7 +151,7 @@ pub mod vm_runtime_server {
             &self,
             request: tonic::Request<super::CreateRequest>,
         ) -> Result<tonic::Response<super::CreateResponse>, tonic::Status>;
-        async fn execute_operator(
+        async fn execute(
             &self,
             request: tonic::Request<super::ExecuteRequest>,
         ) -> Result<tonic::Response<super::ExecuteResponse>, tonic::Status>;
@@ -251,11 +251,11 @@ pub mod vm_runtime_server {
                     };
                     Box::pin(fut)
                 }
-                "/vm_runtime.VmRuntime/ExecuteOperator" => {
+                "/vm_runtime.VmRuntime/Execute" => {
                     #[allow(non_camel_case_types)]
-                    struct ExecuteOperatorSvc<T: VmRuntime>(pub Arc<T>);
+                    struct ExecuteSvc<T: VmRuntime>(pub Arc<T>);
                     impl<T: VmRuntime> tonic::server::UnaryService<super::ExecuteRequest>
-                    for ExecuteOperatorSvc<T> {
+                    for ExecuteSvc<T> {
                         type Response = super::ExecuteResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
@@ -266,9 +266,7 @@ pub mod vm_runtime_server {
                             request: tonic::Request<super::ExecuteRequest>,
                         ) -> Self::Future {
                             let inner = self.0.clone();
-                            let fut = async move {
-                                (*inner).execute_operator(request).await
-                            };
+                            let fut = async move { (*inner).execute(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -277,7 +275,7 @@ pub mod vm_runtime_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ExecuteOperatorSvc(inner);
+                        let method = ExecuteSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
