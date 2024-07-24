@@ -44,6 +44,7 @@ function executeOperator(call, callback) {
     }
 
     const content = contentMap.get(projectID);
+    contentMap.delete(projectID);
 
     const buffer = Buffer.from(content, 'hex');
     let bytes = zlib.inflateSync(buffer);
