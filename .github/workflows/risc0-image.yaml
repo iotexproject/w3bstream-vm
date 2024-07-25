@@ -1,15 +1,15 @@
-name: build_halo2-wasm-node-server_image
+name: build_risc0-server_image
 
 on:
   push:
     paths:
-      - 'halo2-wasm-node-server/**'
+      - 'risc0-server/**'
     tags:
       - v*.*.*    
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: machinefi/halo2server
+  IMAGE_NAME: machinefi/risc0server
 
 jobs:
   build_docker_image:
