@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'wasm-server-go/**'
-    # tags:
-    #   - v*.*.*    
+    tags:
+      - v*.*.*    
 
 env:
   REGISTRY: ghcr.io
@@ -13,7 +13,6 @@ env:
 
 jobs:
   build_docker_image:
-    if: ${{ github.event.ref =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
