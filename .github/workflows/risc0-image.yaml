@@ -4,15 +4,16 @@ on:
   push:
     paths:
       - 'risc0-server/**'
-    tags:
-      - v*.*.*    
+    # tags:
+    #   - v*.*.*    
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: machinefi/risc0server
+  IMAGE_NAME: iotexproject/risc0server
 
 jobs:
   build_docker_image:
+    if: ${{ github.event.ref =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

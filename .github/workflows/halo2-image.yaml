@@ -4,15 +4,16 @@ on:
   push:
     paths:
       - 'halo2-wasm-node-server/**'
-    tags:
-      - v*.*.*    
+    # tags:
+    #   - v*.*.*    
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: machinefi/halo2server
+  IMAGE_NAME: iotexproject/halo2server
 
 jobs:
   build_docker_image:
+    if: ${{ github.event.ref =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
