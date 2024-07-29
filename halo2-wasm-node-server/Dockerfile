@@ -11,4 +11,4 @@ WORKDIR /halo2-wasm-server/server
 RUN npm install
 RUN npm install -g clinic
 
-CMD [ "clinic", "doctor -- node src/server.js" ]
+CMD [ "/bin/bash", "start.sh" ]
