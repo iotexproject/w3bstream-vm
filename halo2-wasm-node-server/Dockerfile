@@ -9,5 +9,6 @@ COPY halo2-wasm-node-server server/
 WORKDIR /halo2-wasm-server/server
 
 RUN npm install
+RUN npm install -g clinic
 
 CMD [ "node", "src/server.js" ]

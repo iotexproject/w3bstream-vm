@@ -6,6 +6,42 @@ const wasm = require("./wasm_instance")
 
 const PROTO_PATH = '../proto/vm_runtime.proto'
 
+const heapdump = require('heapdump');
+const v8 = require('v8');
+const heapLimit1GB = 1 * 1024 * 1024 * 1024;
+const heapLimit2GB = 2 * 1024 * 1024 * 1024;
+let snapshot1GBTaken = false;
+let snapshot2GBTaken = false;
+
+function checkMemoryUsage() {
+    const usedHeap = v8.getHeapStatistics().used_heap_size;
+
+    if (usedHeap > heapLimit1GB && !snapshot1GBTaken) {
+        const filename = `./heapdump-1GB-${Date.now()}.heapsnapshot`;
+        heapdump.writeSnapshot(filename, (err) => {
+            if (err) {
+                console.error('Heapdump for 1GB failed:', err);
+            } else {
+                console.log('Heapdump for 1GB written to', filename);
+                snapshot1GBTaken = true;
+            }
+        });
+    }
+
+    if (usedHeap > heapLimit2GB && !snapshot2GBTaken) {
+        const filename = `./heapdump-2GB-${Date.now()}.heapsnapshot`;
+        heapdump.writeSnapshot(filename, (err) => {
+            if (err) {
+                console.error('Heapdump for 2GB failed:', err);
+            } else {
+                console.log('Heapdump for 2GB written to', filename);
+                snapshot2GBTaken = true;
+            }
+        });
+    }
+}
+
+
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase: true,
     longs: String,
@@ -73,6 +109,8 @@ function startGrpcServer(addr) {
         server.start();
         console.log('Server running at http://' + addr);
     });
+
+    setInterval(checkMemoryUsage, 60000);
 }
 
 function stopGrpcServer() {
@@ -83,7 +121,7 @@ module.exports = {
     startGrpcServer,
     stopGrpcServer
 };
-  
+
 if (require.main === module) {
     startGrpcServer('0.0.0.0:4001');
 }
