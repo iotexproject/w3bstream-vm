@@ -13,6 +13,7 @@ env:
 
 jobs:
   build_docker_image:
+    timeout-minutes: 1440
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
