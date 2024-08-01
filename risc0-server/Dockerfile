@@ -22,15 +22,7 @@ RUN export RUST_BACKTRACE=1
 RUN cd risc0-server && cargo build --release
 
 
-
 FROM  wangweixiaohao2944/risc0serverbase:v1.0.0
-
-# RUN apt update && apt -y install libpq-dev libpq5
-
-# RUN cargo install cargo-binstall
-# RUN echo yes | cargo binstall cargo-risczero
-# RUN cargo risczero install
-
 
 WORKDIR /risc0server/
 
@@ -39,9 +31,5 @@ COPY --from=builder /rust/src/risc0-server/target/release/risc0-server ./
 COPY ./risc0-server/Cargo.toml /risc0server/
 COPY ./risc0-server/diesel.toml /risc0server/
 COPY ./risc0-server/verify_contract_abi.json /risc0server/
-
-#RUN diesel setup
-#RUN diesel migration generate risc0-server
-#RUN diesel migration run
 
 CMD ["/risc0server/risc0-server"]
