@@ -23,13 +23,13 @@ RUN cd risc0-server && cargo build --release
 
 
 
-FROM rust:1.79.0
+FROM  wangweixiaohao2944/risc0serverbase:v1.0.0
 
-RUN apt update && apt -y install libpq-dev libpq5
+# RUN apt update && apt -y install libpq-dev libpq5
 
-RUN cargo install cargo-binstall
-RUN echo yes | cargo binstall cargo-risczero
-RUN cargo risczero install
+# RUN cargo install cargo-binstall
+# RUN echo yes | cargo binstall cargo-risczero
+# RUN cargo risczero install
 
 
 WORKDIR /risc0server/
