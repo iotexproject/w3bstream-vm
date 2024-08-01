@@ -33,7 +33,7 @@ impl VmRuntime for Risc0Server {
         let mut content = Vec::new();
         decoder.read_to_end(&mut content)?;
 
-        let exp_param = request.exp_param;
+        let exp_param = &request.exp_params[0];
 
         // exp_param = {"image_id":"RANGE_ID", "elf":"RANGE_ELF"}
         if exp_param == "" {

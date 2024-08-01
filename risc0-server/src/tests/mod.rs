@@ -63,16 +63,20 @@ async fn test_create_and_execute_e2e() {
     let file_content = fs::read_to_string("./src/tests/10000.json").unwrap();
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
-    let exp_param = v["codeExpParam"].as_str().unwrap().to_string();
+    let exp_params: Vec<String> = v["codeExpParams"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_str().unwrap().to_string())
+        .collect();
     let project_id: u64 = 10000;
 
     let req = Request::new(CreateRequest {
         project_id,
         content,
-        exp_param,
+        exp_params,
     });
 
-    
     let response = client.create(req).await;
     match response {
         Ok(_) => assert!(true),
@@ -115,21 +119,20 @@ async fn test_create_failed_e2e() {
     let file_content = fs::read_to_string("./src/tests/10000.json").unwrap();
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
-    let exp_param = "".to_string();
+    let exp_params = vec!["".to_string()];
     let project_id: u64 = 10000;
 
     let req = Request::new(CreateRequest {
         project_id,
         content,
-        exp_param,
+        exp_params,
     });
 
-    
     let response = client.create(req).await;
     match response {
         Ok(_) => (),
         Err(err) => {
-            assert_eq!("need exp_param", err.message());
+            assert_eq!("need exp_params", err.message());
         }
     }
 }
@@ -149,16 +152,20 @@ async fn test_executor_failed_e2e() {
     let file_content = fs::read_to_string("./src/tests/10000.json").unwrap();
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
-    let exp_param = v["codeExpParam"].as_str().unwrap().to_string();
+    let exp_params: Vec<String> = v["codeExpParams"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_str().unwrap().to_string())
+        .collect();
     let project_id: u64 = 10000;
 
     let req = Request::new(CreateRequest {
         project_id,
         content,
-        exp_param,
+        exp_params,
     });
 
-    
     let response = client.create(req).await;
     match response {
         Ok(_) => assert!(true),
