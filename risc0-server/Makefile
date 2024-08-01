@@ -1,5 +1,3 @@
-
-
 integration_test_depends_stop:
 	@docker stop postgres_test || true && docker container rm postgres_test || true
 
@@ -17,9 +15,10 @@ postgres_test:
 
 .PHONY: risc0_depends
 risc0_depends:
-  cargo install cargo-binstall
-  echo yes | cargo binstall cargo-risczero
-  cargo risczero install
+	cargo install cargo-binstall
+	echo yes | cargo binstall cargo-risczero
+	curl -L https://foundry.paradigm.xyz | bash
+	cargo risczero install
 
 integration_test: integration_test_depends
-	@cd risc0-server/ && cargo test
+	cargo test
