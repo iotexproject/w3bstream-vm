@@ -1,8 +1,14 @@
-use std::{env, fs::{self}, sync::RwLock};
+use std::{
+    env,
+    fs::{self},
+    sync::RwLock,
+};
 
 use diesel::connection::SimpleConnection;
 use lazy_static::lazy_static;
-use rust_grpc::grpc::vm_runtime::{vm_runtime_client::VmRuntimeClient, CreateRequest, ExecuteRequest};
+use rust_grpc::grpc::vm_runtime::{
+    vm_runtime_client::VmRuntimeClient, CreateRequest, ExecuteRequest,
+};
 use serde_json::Value;
 use tonic::{transport::Channel, Request};
 
@@ -15,7 +21,10 @@ lazy_static! {
 }
 
 async fn init_db() {
-    env::set_var("DATABASE_URL", "postgres://test_user:test_passwd@127.0.0.1:15432/test?sslmode=disable");
+    env::set_var(
+        "DATABASE_URL",
+        "postgres://test_user:test_passwd@127.0.0.1:15432/test?sslmode=disable",
+    );
     let init_sql = r#"
     DROP TABLE IF EXISTS vms;
     CREATE TABLE IF NOT EXISTS vms (
@@ -40,7 +49,6 @@ async fn init_db() {
 	)"#;
     let connection = &mut db::pgdb::establish_connection();
     connection.batch_execute(init_sql).unwrap();
-
 }
 
 async fn init_real_server() {
@@ -87,12 +95,15 @@ async fn test_create_and_execute_e2e() {
     }
 
     // generate a proof
-    let req = Request::new(ExecuteRequest { 
-        project_id, 
+    let req = Request::new(ExecuteRequest {
+        project_id,
         task_id: 0u64,
         client_id: "test_client_id".to_string(),
         sequencer_signature: "test_sequencer_sign".to_string(),
-        datas: vec!["{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}".to_string()],
+        datas: vec![
+            "{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}"
+                .to_string(),
+        ],
     });
     let response = client.execute(req).await;
     match response {
@@ -141,8 +152,8 @@ async fn test_create_failed_e2e() {
 async fn test_executor_failed_e2e() {
     init_real_server().await;
 
-        // create client
-        let channel = Channel::from_static("http://127.0.0.1:14001")
+    // create client
+    let channel = Channel::from_static("http://127.0.0.1:14001")
         .connect()
         .await
         .unwrap();
@@ -176,8 +187,8 @@ async fn test_executor_failed_e2e() {
     }
 
     // datas is nil
-    let req = Request::new(ExecuteRequest { 
-        project_id, 
+    let req = Request::new(ExecuteRequest {
+        project_id,
         task_id: 0u64,
         client_id: "test_client_id".to_string(),
         sequencer_signature: "test_sequencer_sign".to_string(),
@@ -192,12 +203,15 @@ async fn test_executor_failed_e2e() {
     }
 
     // project not found
-    let req = Request::new(ExecuteRequest { 
-        project_id: 99999, 
+    let req = Request::new(ExecuteRequest {
+        project_id: 99999,
         task_id: 0u64,
         client_id: "test_client_id".to_string(),
         sequencer_signature: "test_sequencer_sign".to_string(),
-        datas: vec!["{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}".to_string()],
+        datas: vec![
+            "{\"private_input\":\"14\", \"public_input\":\"3,34\", \"receipt_type\":\"Stark\"}"
+                .to_string(),
+        ],
     });
     let response = client.execute(req).await;
     match response {

@@ -1,6 +1,8 @@
 use std::env;
 
-use diesel::{PgConnection, Connection, SelectableHelper, RunQueryDsl, QueryDsl, ExpressionMethods};
+use diesel::{
+    Connection, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl, SelectableHelper,
+};
 use dotenvy::dotenv;
 
 use crate::db::models::{NewPoof, NewVm, Proof, Vm};
@@ -13,9 +15,14 @@ pub fn establish_connection() -> PgConnection {
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
-pub fn create_vm<'a>(conn: &mut PgConnection, prj_name: &'a str, elf_str: &'a str, id_str: &'a str) -> Result<Vm, diesel::result::Error> {
-    use crate::db::schema::vms::dsl::*;
+pub fn create_vm<'a>(
+    conn: &mut PgConnection,
+    prj_name: &'a str,
+    elf_str: &'a str,
+    id_str: &'a str,
+) -> Result<Vm, diesel::result::Error> {
     use crate::db::schema::vms;
+    use crate::db::schema::vms::dsl::*;
 
     let new_vm = NewVm {
         project_name: prj_name,
@@ -27,14 +34,13 @@ pub fn create_vm<'a>(conn: &mut PgConnection, prj_name: &'a str, elf_str: &'a st
         Ok(_) => (),
         Err(err) => {
             return Err(err);
-        },
+        }
     };
 
-
     diesel::insert_into(vms::table)
-    .values(&new_vm)
-    .returning(Vm::as_returning())
-    .get_result(conn)
+        .values(&new_vm)
+        .returning(Vm::as_returning())
+        .get_result(conn)
 }
 
 pub fn get_vm<'a>(conn: &mut PgConnection, id_str: &'a str) -> Result<Vm, diesel::result::Error> {
@@ -42,21 +48,39 @@ pub fn get_vm<'a>(conn: &mut PgConnection, id_str: &'a str) -> Result<Vm, diesel
 
     // let results = vms.filter(image_id.eq(id_str)).limit(1).select(Vm::as_select()).load(conn).expect("Error loading vms");
 
-    let vm = vms.filter(image_id.eq(id_str)).select(Vm::as_select()).first(conn)?;
+    let vm = vms
+        .filter(image_id.eq(id_str))
+        .select(Vm::as_select())
+        .first(conn)?;
     Ok(vm)
 }
 
-pub fn get_vm_by_project<'a>(conn: &mut PgConnection, project: &'a str) -> Result<Vm, diesel::result::Error> {
+pub fn get_vm_by_project<'a>(
+    conn: &mut PgConnection,
+    project: &'a str,
+) -> Result<Vm, diesel::result::Error> {
     use crate::db::schema::vms::dsl::*;
 
     // let results = vms.filter(image_id.eq(id_str)).limit(1).select(Vm::as_select()).load(conn).expect("Error loading vms");
 
-    let vm = vms.filter(project_name.eq(project)).select(Vm::as_select()).first(conn)?;
+    let vm = vms
+        .filter(project_name.eq(project))
+        .select(Vm::as_select())
+        .first(conn)?;
     Ok(vm)
 }
 
-pub fn create_proof<'a>(conn: &mut PgConnection, project_id: &'a str, task_id: &'a str, client_id: &'a str, sequencer_sign: &'a str, image_id: &'a str, 
-                            datas_input: &'a str, receipt_type: &'a str, status: &'a str) -> Proof {
+pub fn create_proof<'a>(
+    conn: &mut PgConnection,
+    project_id: &'a str,
+    task_id: &'a str,
+    client_id: &'a str,
+    sequencer_sign: &'a str,
+    image_id: &'a str,
+    datas_input: &'a str,
+    receipt_type: &'a str,
+    status: &'a str,
+) -> Proof {
     use crate::db::schema::proofs;
 
     let new_proof = NewPoof {
@@ -71,13 +95,17 @@ pub fn create_proof<'a>(conn: &mut PgConnection, project_id: &'a str, task_id: &
     };
 
     diesel::insert_into(proofs::table)
-    .values(&new_proof)
-    .returning(Proof::as_returning())
-    .get_result(conn)
-    .expect("Error saving new proof")
+        .values(&new_proof)
+        .returning(Proof::as_returning())
+        .get_result(conn)
+        .expect("Error saving new proof")
 }
 
-pub fn update_proof_with_receipt<'a>(conn: &mut PgConnection, p: &'a Proof, r: &'a String) -> Proof {
+pub fn update_proof_with_receipt<'a>(
+    conn: &mut PgConnection,
+    p: &'a Proof,
+    r: &'a String,
+) -> Proof {
     use crate::db::schema::proofs::dsl::*;
 
     diesel::update(proofs.filter(id.eq(p.id)))
@@ -87,7 +115,11 @@ pub fn update_proof_with_receipt<'a>(conn: &mut PgConnection, p: &'a Proof, r: &
         .expect("Error updating proof")
 }
 
-pub fn update_proof_status_with_receipt<'a>(conn: &mut PgConnection, p: &'a Proof, s: &'a String) -> Proof {
+pub fn update_proof_status_with_receipt<'a>(
+    conn: &mut PgConnection,
+    p: &'a Proof,
+    s: &'a String,
+) -> Proof {
     use crate::db::schema::proofs::dsl::*;
 
     diesel::update(proofs.filter(id.eq(p.id)))

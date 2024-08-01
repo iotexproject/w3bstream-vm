@@ -1,4 +1,8 @@
-use std::{sync::atomic::{AtomicBool, Ordering}, thread, time::Duration};
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    thread,
+    time::Duration,
+};
 
 use crate::start_grpc_server;
 
