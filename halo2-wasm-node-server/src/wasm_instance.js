@@ -114,17 +114,20 @@ function getInt32Memory0() {
     }
     return cachedInt32Memory0;
 }
+
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
+}
 /**
 * @param {bigint} project_id
 * @param {bigint} task_id
 * @param {string} client_id
 * @param {string} sequencer_sign
 * @param {string} input
-* @returns {string}
+* @returns {Uint8Array}
 */
 module.exports.prove = function(project_id, task_id, client_id, sequencer_sign, input) {
-    let deferred4_0;
-    let deferred4_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passStringToWasm0(client_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -136,12 +139,11 @@ module.exports.prove = function(project_id, task_id, client_id, sequencer_sign, 
         wasm.prove(retptr, project_id, task_id, ptr0, len0, ptr1, len1, ptr2, len2);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
-        deferred4_0 = r0;
-        deferred4_1 = r1;
-        return getStringFromWasm0(r0, r1);
+        var v4 = getArrayU8FromWasm0(r0, r1).slice();
+        wasm.__wbindgen_free(r0, r1 * 1, 1);
+        return v4;
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
     }
 };
 
@@ -152,10 +154,6 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-
-module.exports.__wbg_log_d95057db93b45721 = function(arg0, arg1) {
-    console.log(getStringFromWasm0(arg0, arg1));
-};
 
 module.exports.__wbg_crypto_58f13aa23ffcb166 = function(arg0) {
     const ret = getObject(arg0).crypto;
@@ -192,11 +190,6 @@ module.exports.__wbindgen_object_drop_ref = function(arg0) {
     takeObject(arg0);
 };
 
-module.exports.__wbg_msCrypto_abcb1295e768d1f2 = function(arg0) {
-    const ret = getObject(arg0).msCrypto;
-    return addHeapObject(ret);
-};
-
 module.exports.__wbg_require_2784e593a4674877 = function() { return handleError(function () {
     const ret = module.require;
     return addHeapObject(ret);
@@ -209,6 +202,11 @@ module.exports.__wbindgen_is_function = function(arg0) {
 
 module.exports.__wbindgen_string_new = function(arg0, arg1) {
     const ret = getStringFromWasm0(arg0, arg1);
+    return addHeapObject(ret);
+};
+
+module.exports.__wbg_msCrypto_abcb1295e768d1f2 = function(arg0) {
+    const ret = getObject(arg0).msCrypto;
     return addHeapObject(ret);
 };
 

@@ -89,13 +89,8 @@ function execute(call, callback) {
     wasm.initWasmInstance();
 
     const result = wasm.prove(projectID, taskID, clientID, sequencerSignature, JSON.stringify(datas));
-    // convert result to bytes
-    let resultBytes = new Uint8Array(result.length);
-    for (var i = 0; i < result.length; i++) {
-        resultBytes[i] = result.charCodeAt(i);
-    }
 
-    callback(null, { result: resultBytes });
+    callback(null, { result: result });
 }
 
 let server;
@@ -123,5 +118,5 @@ module.exports = {
 };
 
 if (require.main === module) {
-    startGrpcServer('0.0.0.0:4001');
+    startGrpcServer('0.0.0.0:4002');
 }
