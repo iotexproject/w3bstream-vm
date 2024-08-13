@@ -3,15 +3,16 @@ use std::{io::Read, str::FromStr};
 use ethers::abi::{encode, Token};
 use flate2::read::ZlibDecoder;
 use hex::FromHex;
+use risc0_ethereum_contracts::groth16;
 use risc0_zkvm::{InnerReceipt, Receipt};
 use serde_json::Value;
 use tonic::{Request, Response, Status};
-use risc0_ethereum_contracts::groth16;
 
 use crate::{db, handlers::proof::get_receipt, model::models::ProofType};
 
-use rust_grpc::grpc::vm_runtime::{vm_runtime_server::VmRuntime, CreateRequest, CreateResponse, ExecuteRequest, ExecuteResponse};
-
+use rust_grpc::grpc::vm_runtime::{
+    vm_runtime_server::VmRuntime, CreateRequest, CreateResponse, ExecuteRequest, ExecuteResponse,
+};
 
 #[derive(Debug)]
 pub struct Risc0Server {}
@@ -33,7 +34,7 @@ impl VmRuntime for Risc0Server {
         let mut content = Vec::new();
         decoder.read_to_end(&mut content)?;
 
-        let exp_param = request.exp_param;
+        let exp_param = &request.exp_params[0];
 
         // exp_param = {"image_id":"RANGE_ID", "elf":"RANGE_ELF"}
         if exp_param == "" {
@@ -79,13 +80,18 @@ impl VmRuntime for Risc0Server {
         let datas = request.datas;
 
         if datas.len() == 0 {
-            return Err(Status::invalid_argument("need datas"))
+            return Err(Status::invalid_argument("need datas"));
         }
 
         let connection = &mut db::pgdb::establish_connection();
         let image_id = match db::pgdb::get_vm_by_project(connection, &project_id.to_string()) {
             Ok(v) => v.image_id,
-            Err(_) => return Err(Status::not_found(format!("{} not found", project_id.to_string()))),
+            Err(_) => {
+                return Err(Status::not_found(format!(
+                    "{} not found",
+                    project_id.to_string()
+                )))
+            }
         };
 
         // TODO move to guest method
@@ -95,7 +101,12 @@ impl VmRuntime for Risc0Server {
         let mut receipt_type = ProofType::from_str("Snark").unwrap();
         // TODO check v
         if v.get("receipt_type").is_some() {
-            receipt_type = v["receipt_type"].as_str().unwrap().to_string().parse().unwrap();
+            receipt_type = v["receipt_type"]
+                .as_str()
+                .unwrap()
+                .to_string()
+                .parse()
+                .unwrap();
         }
         // let receipt_type: Result<ProofType, _> =
         //     v["receipt_type"].as_str().unwrap().to_string().parse();
@@ -123,17 +134,12 @@ impl VmRuntime for Risc0Server {
             let seal = groth16::encode(risc_receipt.inner.groth16().unwrap().seal.clone()).unwrap();
             let journal = risc_receipt.journal.bytes.clone();
 
-            let tokens = vec![
-                Token::Bytes(seal),
-                Token::Bytes(journal),
-            ];
+            let tokens = vec![Token::Bytes(seal), Token::Bytes(journal)];
 
             result = encode(&tokens);
         }
 
-        Ok(Response::new(ExecuteResponse {
-            result,
-        }))
+        Ok(Response::new(ExecuteResponse { result }))
     }
 }
 
@@ -150,14 +156,14 @@ fn param() {
             let journal = risc_receipt.journal.bytes.clone();
             println!("journal {}", format!("0x{}", hex::encode(journal.clone())));
 
-                let tokens = vec![
-                    Token::Bytes(seal),
-                    Token::Bytes(journal),
-                ];
+            let tokens = vec![Token::Bytes(seal), Token::Bytes(journal)];
 
-                let result = encode(&tokens);
-                println!("bytes_seal_journal {}", format!("0x{}", hex::encode(result.clone())));
-        },
+            let result = encode(&tokens);
+            println!(
+                "bytes_seal_journal {}",
+                format!("0x{}", hex::encode(result.clone()))
+            );
+        }
         InnerReceipt::Composite(_) => todo!(),
         InnerReceipt::Succinct(_) => todo!(),
         InnerReceipt::Fake(_) => todo!(),

@@ -1,5 +1,5 @@
-use crate::db::schema::vms;
 use crate::db::schema::proofs;
+use crate::db::schema::vms;
 use diesel::prelude::*;
 
 #[derive(Queryable, Selectable)]
@@ -9,12 +9,12 @@ pub struct Vm {
     pub id: i32,
     pub project_name: String,
     pub elf: String,
-    pub image_id: String
+    pub image_id: String,
 }
 
 impl Vm {
     pub fn new() -> Self {
-        Vm{
+        Vm {
             id: 0,
             project_name: "init".to_string(),
             elf: "init".to_string(),
@@ -49,17 +49,17 @@ pub struct Proof {
 
 impl Proof {
     pub fn new() -> Self {
-        Proof{
+        Proof {
             id: 0,
             project_id: "0".to_string(),
             task_id: "0".to_string(),
             client_id: "init".to_string(),
             sequencer_sign: "init".to_string(),
-            image_id:  "init".to_string(),
-            datas_input:  "init".to_string(),
+            image_id: "init".to_string(),
+            datas_input: "init".to_string(),
             receipt_type: "init".to_string(),
-            receipt:  Some("init".to_string()),
-            status:  "init".to_string(),
+            receipt: Some("init".to_string()),
+            status: "init".to_string(),
         }
     }
 }

@@ -1,7 +1,7 @@
-use std::env;
-use dotenvy::dotenv;
 use anyhow::Result;
+use dotenvy::dotenv;
 use risc0_zkvm::Receipt;
+use std::env;
 
 use crate::{
     core::prove::{bonsai_groth16_prove_with_env, generate_proof_with_elf},
@@ -42,7 +42,14 @@ pub async fn get_receipt(
     let receipt: Result<Receipt>;
     match receipt_type {
         ProofType::Stark => {
-            receipt = generate_proof_with_elf(project_id, task_id, client_id, sequencer_sign, datas_input, &elf_cont);
+            receipt = generate_proof_with_elf(
+                project_id,
+                task_id,
+                client_id,
+                sequencer_sign,
+                datas_input,
+                &elf_cont,
+            );
         }
         ProofType::Snark => {
             dotenv().ok();
@@ -50,7 +57,7 @@ pub async fn get_receipt(
             let bonsai_url = env::var("BONSAI_URL").expect("BONSAI_URL must be set");
             let bonsai_key = env::var("BONSAI_KEY").expect("BONSAI_KEY must be set");
             // TODO
-            receipt = tokio::task::spawn_blocking(move || { 
+            receipt = tokio::task::spawn_blocking(move || {
                 bonsai_groth16_prove_with_env(
                     project_id,
                     task_id,
@@ -60,8 +67,10 @@ pub async fn get_receipt(
                     &elf_cont,
                     bonsai_url,
                     bonsai_key,
-               )
-            }).await.unwrap();
+                )
+            })
+            .await
+            .unwrap();
         }
     }
 

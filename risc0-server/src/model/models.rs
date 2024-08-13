@@ -1,11 +1,10 @@
-use std::{str::FromStr, fmt};
 use serde::{Deserialize, Serialize};
+use std::{fmt, str::FromStr};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ProofType {
     Stark,
     Snark,
-
 }
 
 impl FromStr for ProofType {

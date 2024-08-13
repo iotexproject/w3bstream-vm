@@ -34,12 +34,12 @@ async fn test_create_and_execute_e2e() {
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
     let project_id: u64 = 10003;
-    let exp_param = "".to_string();
+    let exp_params = vec!("".to_string());
 
     let req = Request::new(CreateRequest {
         project_id,
         content,
-        exp_param,
+        exp_params,
     });
 
     
@@ -85,13 +85,13 @@ async fn test_create_repeat_e2e() {
     let file_content = fs::read_to_string("./src/tests/10003.json").unwrap();
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
-    let exp_param = "".to_string();
+    let exp_params = vec!("".to_string());
     let project_id: u64 = 10003;
 
     let req = Request::new(CreateRequest {
         project_id,
         content: content.clone(),
-        exp_param: exp_param.clone(),
+        exp_params: exp_params.clone(),
     });
 
     
@@ -107,7 +107,7 @@ async fn test_create_repeat_e2e() {
     let req_repeat = Request::new(CreateRequest {
         project_id,
         content: content.clone(),
-        exp_param: exp_param.clone(), 
+        exp_params: exp_params.clone(), 
     });
     let response = client.create(req_repeat).await;
     match response {
@@ -135,13 +135,13 @@ async fn test_executor_failed_e2e() {
     let file_content = fs::read_to_string("./src/tests/10003.json").unwrap();
     let v: Value = serde_json::from_str(&file_content).unwrap();
     let content = v["code"].as_str().unwrap().to_string();
-    let exp_param = "".to_string();
+    let exp_params = vec!("".to_string());
     let project_id: u64 = 10000;
 
     let req = Request::new(CreateRequest {
         project_id,
         content,
-        exp_param,
+        exp_params,
     });
 
     
