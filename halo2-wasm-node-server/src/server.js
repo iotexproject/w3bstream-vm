@@ -118,5 +118,5 @@ module.exports = {
 };
 
 if (require.main === module) {
-    startGrpcServer('0.0.0.0:4002');
+    startGrpcServer('0.0.0.0:4001');
 }
