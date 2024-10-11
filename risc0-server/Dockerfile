@@ -1,35 +1,38 @@
+# Use the official Rust image as the base image
 FROM rust:1.79.0 AS builder
 
-RUN update-ca-certificates
-
-RUN apt update
-RUN apt install -y curl libpq-dev libssl-dev libpq-dev librust-openssl-dev librust-openssl-sys-dev
-RUN apt -y install libpq5
-RUN apt update && apt install -y libprotobuf-dev protobuf-compiler
-
-RUN cargo install diesel_cli --no-default-features --features postgres --version 2.1.0
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
 RUN curl -L https://foundry.paradigm.xyz | bash
 RUN /root/.foundry/bin/foundryup
 RUN cp /root/.foundry/bin/* /usr/bin/
+RUN apt update && apt install -y libprotobuf-dev protobuf-compiler
 
-WORKDIR /rust/src
-COPY ./ ./
+# Copy the Cargo.toml and Cargo.lock files
+# COPY Cargo.toml Cargo.lock ./
 
-RUN export CARGO_NET_GIT_FETCH_WITH_CLI=true
-RUN export RUST_BACKTRACE=1
+# Copy the source code
+COPY ./risc0-server ./risc0-server
+COPY ./rust-grpc ./rust-grpc
+COPY ./proto ./proto
 
+# Build the project
 RUN cd risc0-server && cargo build --release
 
-
-FROM  wangweixiaohao2944/risc0serverbase:v1.0.0
-
-WORKDIR /risc0server/
+# Use a minimal base image for the final stage
+FROM debian:bullseye-slim
 
 
-COPY --from=builder /rust/src/risc0-server/target/release/risc0-server ./
-COPY ./risc0-server/Cargo.toml /risc0server/
-COPY ./risc0-server/diesel.toml /risc0server/
-COPY ./risc0-server/verify_contract_abi.json /risc0server/
+# Install ca-certificates without cache
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["/risc0server/risc0-server"]
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /usr/src/app/risc0-server/target/release/risc0-server /usr/local/bin/risc0-server
+
+# Expose the port that the server will run on
+EXPOSE 4001
+
+# Set the entrypoint to the compiled binary
+CMD ["risc0-server"]
