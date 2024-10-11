@@ -1,19 +1,13 @@
 use grpc::server::Risc0Server;
-use rust_grpc::grpc::vm_runtime::vm_runtime_server::VmRuntimeServer;
+use rust_grpc::grpc::vm::vm_server::VmServer;
 
 use tonic::transport::Server;
 
 mod core;
-mod db;
 mod grpc;
-mod handlers;
-mod model;
-#[cfg(test)]
-mod tests;
-mod tools;
 
-pub async fn start_grpc_server(addr: &str) {
-    let addr = addr.parse().unwrap();
+pub async fn start_grpc_server(addr: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let addr = addr.parse()?;
     let risc0_server = Risc0Server::new();
 
     tracing_subscriber::fmt()
@@ -24,8 +18,9 @@ pub async fn start_grpc_server(addr: &str) {
 
     Server::builder()
         .trace_fn(|_| tracing::info_span!("risc0_server"))
-        .add_service(VmRuntimeServer::new(risc0_server))
+        .add_service(VmServer::new(risc0_server))
         .serve(addr)
-        .await
-        .unwrap();
+        .await?;
+
+    Ok(())
 }
