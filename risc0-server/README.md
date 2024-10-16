@@ -16,5 +16,5 @@ modify `.env` file
 ### run risc0 rpc sever
 
 ``` shell
-./target/release/risc0server
+./target/release/risc0-server
 ```
