@@ -29,7 +29,6 @@ WORKDIR /risc0server/
 
 COPY --from=builder /rust/src/risc0-server/target/release/risc0-server ./
 COPY ./risc0-server/Cargo.toml /risc0server/
-COPY ./risc0-server/diesel.toml /risc0server/
 COPY ./risc0-server/verify_contract_abi.json /risc0server/
 
 CMD ["/risc0server/risc0-server"]

@@ -153,7 +153,8 @@ impl Vm for Risc0Server {
         info!("receipt: {:?}", receipt);
 
         // let mut result = receipt.as_bytes().to_vec();
-        let mut result = serde_json::to_vec(&receipt).unwrap();
+        let mut result = serde_json::to_vec(&receipt)
+            .map_err(|e| Status::internal(format!("Failed to serialize receipt: {}", e)))?;
         // let risc_receipt: Receipt = serde_json::from_str(&receipt).unwrap();
         if matches!(receipt.inner, InnerReceipt::Groth16(_)) {
             let seal = groth16::encode(receipt.inner.groth16().unwrap().seal.clone()).unwrap();
