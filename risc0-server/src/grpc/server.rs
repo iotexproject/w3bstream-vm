@@ -15,7 +15,7 @@ use rust_grpc::grpc::vm::{
 use serde_json::Value;
 use tokio::sync::RwLock;
 use tonic::{Request, Response, Status};
-use tracing::{error, info, instrument, warn};
+use tracing::{error, info, warn};
 
 use crate::core::prover::{BonsaiProver, LocalProver, Prover};
 
@@ -98,6 +98,8 @@ impl Vm for Risc0Server {
             );
         }
 
+        info!("New project added: {}", req.project_id);
+
         Ok(Response::new(NewProjectResponse {}))
     }
 
@@ -105,7 +107,7 @@ impl Vm for Risc0Server {
         &self,
         request: Request<ExecuteTaskRequest>,
     ) -> Result<Response<ExecuteTaskResponse>, Status> {
-        println!("risc0 instance execute...");
+        info!("risc0_server execute_task");
 
         let req = request.into_inner();
 
@@ -148,7 +150,8 @@ impl Vm for Risc0Server {
         .map_err(|e| Status::internal(format!("Failed to spawn blocking task: {}", e)))?
         .map_err(|e| Status::internal(format!("Failed to prove: {}", e)))?;
 
-        // println!("{:?}", receipt);
+        info!("receipt: {:?}", receipt);
+
         // let mut result = receipt.as_bytes().to_vec();
         let mut result = serde_json::to_vec(&receipt).unwrap();
         // let risc_receipt: Receipt = serde_json::from_str(&receipt).unwrap();
