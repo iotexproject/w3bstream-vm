@@ -21,7 +21,7 @@ COPY ./proto ./proto
 RUN cd risc0-server && cargo build --release
 
 # Use a minimal base image for the final stage
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 
 # Install ca-certificates without cache
