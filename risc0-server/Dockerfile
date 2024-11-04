@@ -25,8 +25,21 @@ FROM debian:bookworm-slim
 
 
 # Install ca-certificates without cache
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl build-essential ca-certificates && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install Rust using rustup
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Add Rust to the PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install RISC Zero's rzup with proper shell initialization
+SHELL ["/bin/bash", "-c"]
+RUN curl -L https://risczero.com/install | bash 
+# Install RISC Zero using rzup with shell properly loaded
+RUN source "$HOME/.bashrc" && \
+    source "$HOME/.cargo/env" && \
+    rzup install
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /usr/src/app/risc0-server/target/release/risc0-server /usr/local/bin/risc0-server
