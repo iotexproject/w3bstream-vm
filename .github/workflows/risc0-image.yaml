@@ -51,7 +51,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           context: .
           file: ./risc0-server/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
