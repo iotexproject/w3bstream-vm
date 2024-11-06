@@ -9,6 +9,8 @@ use risc0_zkvm::{
     default_prover, ExecutorEnv, Prover as risc0Prover, ProverOpts, Receipt, VerifierContext,
 };
 
+const SESSION_LIMIT: u64 = 5_000_000;
+
 pub trait Prover: DynClone + Send + Sync {
     fn prove(&self, data: Vec<String>) -> Result<Receipt>;
 }
@@ -45,7 +47,10 @@ impl LocalProver {
 
 impl Prover for LocalProver {
     fn prove(&self, data: Vec<String>) -> Result<Receipt> {
-        let env = ExecutorEnv::builder().write(&data)?.build()?;
+        let env = ExecutorEnv::builder()
+            .session_limit(Some(SESSION_LIMIT))
+            .write(&data)?
+            .build()?;
 
         Ok(self.prover.inner.prove(env, &self.elf)?.receipt)
     }
@@ -73,7 +78,10 @@ impl BonsaiProver {
 
 impl Prover for BonsaiProver {
     fn prove(&self, data: Vec<String>) -> Result<Receipt> {
-        let env = ExecutorEnv::builder().write(&data)?.build()?;
+        let env = ExecutorEnv::builder()
+            .session_limit(Some(SESSION_LIMIT))
+            .write(&data)?
+            .build()?;
 
         Ok(self
             .prover
