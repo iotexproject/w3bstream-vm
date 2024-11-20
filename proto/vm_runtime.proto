@@ -1,5 +1,7 @@
 syntax = "proto3";
+
 package vm;
+option go_package = "../gnark-server/proto";
 
 service VM {
     rpc NewProject(NewProjectRequest) returns (NewProjectResponse);
