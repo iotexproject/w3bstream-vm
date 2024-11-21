@@ -13,7 +13,7 @@ This server provides a gRPC interface for:
 ## Quick Start
 1. Start the server:
 ```
-go run cmd/main.go --port 8080
+go run cmd/main.go --port 4004
 ```
 
 2. The server will listen for gRPC requests on the specified port.
