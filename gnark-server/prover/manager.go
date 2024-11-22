@@ -88,5 +88,5 @@ func encodeProofForSolidity(proof groth16.Proof, wit witness.Witness) ([]byte, e
 	if err != nil {
 		return nil, err
 	}
-	return append(proofBytes[:8*chunkSize], append(commitmentsBytes, witnessBytes...)...), nil
+	return append(proofBytes[:8*chunkSize], append(commitmentsBytes, witnessBytes[12:]...)...), nil
 }
