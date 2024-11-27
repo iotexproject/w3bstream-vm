@@ -21,7 +21,7 @@ const chunkSize = fr.Bytes
 // encoded in binary and proving key encoded in provingKey.
 func (p *ProverManager) NewProject(projectID uint64, binary []byte, provingKey []byte) error {
 	if _, exist := p.proverMap.Load(projectID); exist {
-		return fmt.Errorf("project %d already exists", projectID)
+		return nil
 	}
 
 	prover := &Groth16Prover{}
