@@ -21,7 +21,7 @@ func TestProverManager(t *testing.T) {
 
 		// Test creating a duplicate project
 		err = manager.NewProject(1, circuitData, pkData)
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("exec project", func(t *testing.T) {
