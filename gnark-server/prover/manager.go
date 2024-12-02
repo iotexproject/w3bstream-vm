@@ -1,6 +1,7 @@
 package prover
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"sync"
@@ -19,33 +20,38 @@ const chunkSize = fr.Bytes
 
 // Create a prover in manager, which is identified by projectID and is constructed with circuit
 // encoded in binary and proving key encoded in provingKey.
-func (p *ProverManager) NewProject(projectID uint64, binary []byte, provingKey []byte) error {
-	if _, exist := p.proverMap.Load(projectID); exist {
+func (p *ProverManager) NewProject(projectID string, projectVersion string, binary []byte, provingKey []byte) error {
+	if _, exist := p.proverMap.Load(projectKey(projectID, projectVersion)); exist {
 		return nil
 	}
 
 	prover := &Groth16Prover{}
 	if err := prover.LoadCircuit(binary); err != nil {
-		return fmt.Errorf("failed to load project %d circuit: %w", projectID, err)
+		return fmt.Errorf("failed to load project %s circuit: %w", projectID, err)
 	}
 
 	if err := prover.LoadProvingKey(provingKey); err != nil {
-		return fmt.Errorf("failed to load project %d proving key: %w", projectID, err)
+		return fmt.Errorf("failed to load project %s proving key: %w", projectID, err)
 	}
 
-	p.proverMap.Store(projectID, prover)
+	p.proverMap.Store(projectKey(projectID, projectVersion), prover)
 
 	return nil
+}
+
+func projectKey(projectID string, projectVersion string) [32]byte {
+	data := projectID + projectVersion
+	return sha256.Sum256([]byte(data))
 }
 
 // Execute a proving task on prover identified by projectID with payloads as witness.
 // The encoding of witness is conducted according
 // to https://docs.gnark.consensys.io/HowTo/serialize#witness. The output Exec is the
 // calldata of verifyproof func in verifier contract.
-func (p *ProverManager) Exec(projectID uint64, payloads []byte) ([]byte, error) {
-	prover, exist := p.proverMap.Load(projectID)
+func (p *ProverManager) Exec(projectID string, projectVersion string, payloads []byte) ([]byte, error) {
+	prover, exist := p.proverMap.Load(projectKey(projectID, projectVersion))
 	if !exist {
-		return nil, fmt.Errorf("project %d does not exist", projectID)
+		return nil, fmt.Errorf("project %s does not exist", projectID)
 	}
 
 	wit, _ := witness.New(ecc.BN254.ScalarField())
@@ -53,7 +59,7 @@ func (p *ProverManager) Exec(projectID uint64, payloads []byte) ([]byte, error) 
 
 	proof, err := prover.(*Groth16Prover).Prove(wit)
 	if err != nil {
-		return nil, fmt.Errorf("failed to prove project %d: %w", projectID, err)
+		return nil, fmt.Errorf("failed to prove project %s: %w", projectID, err)
 	}
 
 	return encodeProofForSolidity(proof, wit)

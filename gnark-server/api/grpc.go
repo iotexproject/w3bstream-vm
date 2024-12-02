@@ -23,7 +23,7 @@ func (s *Server) NewProject(ctx context.Context, req *proto.NewProjectRequest) (
 	// Extract proving key from metadata
 	provingKey := req.Metadata
 
-	if err := s.manager.NewProject(req.ProjectID, req.Binary, provingKey); err != nil {
+	if err := s.manager.NewProject(req.ProjectID, req.ProjectVersion, req.Binary, provingKey); err != nil {
 		return nil, fmt.Errorf("failed to create new project: %w", err)
 	}
 
@@ -35,7 +35,7 @@ func (s *Server) ExecuteTask(ctx context.Context, req *proto.ExecuteTaskRequest)
 		return nil, fmt.Errorf("expected exactly one payload")
 	}
 
-	proof, err := s.manager.Exec(req.ProjectID, req.Payloads[0])
+	proof, err := s.manager.Exec(req.ProjectID, req.ProjectVersion, req.Payloads[0])
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute task: %w", err)
 	}

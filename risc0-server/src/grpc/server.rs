@@ -13,6 +13,7 @@ use rust_grpc::grpc::vm::{
     vm_server::Vm, ExecuteTaskRequest, ExecuteTaskResponse, NewProjectRequest, NewProjectResponse,
 };
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use tokio::sync::RwLock;
 use tonic::{Request, Response, Status};
 use tracing::{error, info, warn};
@@ -21,15 +22,31 @@ use crate::core::prover::{BonsaiProver, LocalProver, Prover};
 
 pub struct Risc0Server {
     // TODO: replace with LRU
-    projects: Arc<RwLock<HashMap<(u64, u64), Project>>>,
+    projects: Arc<RwLock<HashMap<ProjectKey, Project>>>,
 }
 
 #[derive(Clone)]
 struct Project {
-    pub project_id: u64,
+    pub project_id: String,
+    pub project_version: String,
     // TODO: share prover across threads
     pub elf: Vec<u8>,
     pub image_id: Vec<u32>,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone)]
+struct ProjectKey([u8; 32]);
+
+impl ProjectKey {
+    fn new(project_id: &String, version: &String) -> Self {
+        let mut hasher = Sha256::new();
+        hasher.update(project_id);
+        hasher.update(version);
+        let result = hasher.finalize();
+        let mut hash = [0u8; 32];
+        hash.copy_from_slice(&result);
+        ProjectKey(hash)
+    }
 }
 
 lazy_static! {
@@ -89,16 +106,20 @@ impl Vm for Risc0Server {
         {
             let mut map = self.projects.write().await;
             map.insert(
-                (req.project_id, 0),
+                ProjectKey::new(&req.project_id, &req.project_version),
                 Project {
-                    project_id: req.project_id,
+                    project_id: req.project_id.clone(),
+                    project_version: req.project_version.clone(),
                     elf: elf_data,
                     image_id: id_data,
                 },
             );
         }
 
-        info!("New project added: {}", req.project_id);
+        info!(
+            "New project added(id{}, version{})",
+            req.project_id, req.project_version
+        );
 
         Ok(Response::new(NewProjectResponse {}))
     }
@@ -117,7 +138,8 @@ impl Vm for Risc0Server {
 
         let project = {
             let map = self.projects.read().await;
-            map.get(&(req.project_id, 0)).cloned()
+            map.get(&ProjectKey::new(&req.project_id, &req.project_version))
+                .cloned()
         }
         .ok_or_else(|| Status::not_found(format!("{} not found", req.project_id)))?;
 
@@ -237,20 +259,22 @@ mod tests {
         let compressed_binary = create_compressed_binary();
 
         let request = NewProjectRequest {
-            project_id: 1,
-            project_version: "".to_string(),
+            project_id: "test1".to_string(),
+            project_version: "1.0".to_string(),
             binary: compressed_binary,
             metadata: vec![],
         };
 
-        let response = server.new_project(Request::new(request)).await;
+        let response = server.new_project(Request::new(request.clone())).await;
         assert!(response.is_ok());
 
         let projects = server.projects.read().await;
-        assert!(projects.contains_key(&(1, 0)));
+        let key = ProjectKey::new(&request.project_id, &request.project_version);
+        assert!(projects.contains_key(&key));
 
-        let project = projects.get(&(1, 0)).unwrap();
-        assert_eq!(project.project_id, 1);
+        let project = projects.get(&key).unwrap();
+        assert_eq!(project.project_id, "test1");
+        assert_eq!(project.project_version, "1.0");
         assert_eq!(project.elf, create_dummy_elf());
         assert_eq!(
             project.image_id,
@@ -268,13 +292,13 @@ mod tests {
         // First, add a project
         let compressed_binary = create_compressed_binary();
         let new_project_request = NewProjectRequest {
-            project_id: 1,
-            project_version: "".to_string(),
+            project_id: "test1".to_string(),
+            project_version: "1.0".to_string(),
             binary: compressed_binary,
             metadata: vec![],
         };
         server
-            .new_project(Request::new(new_project_request))
+            .new_project(Request::new(new_project_request.clone()))
             .await
             .unwrap();
 
@@ -285,8 +309,8 @@ mod tests {
             "receipt_type": "Stark"
         });
         let execute_request = ExecuteTaskRequest {
-            project_id: 1,
-            project_version: "".to_string(),
+            project_id: "test1".to_string(),
+            project_version: "1.0".to_string(),
             task_id: "".as_bytes().to_vec(),
             payloads: vec![serde_json::to_vec(&payload).unwrap()],
         };
@@ -352,8 +376,8 @@ mod tests {
             "receipt_type": "Stark"
         });
         let execute_request = ExecuteTaskRequest {
-            project_id: 1, // This project doesn't exist
-            project_version: "".to_string(),
+            project_id: "nonexistent".to_string(),
+            project_version: "1.0".to_string(),
             task_id: "".as_bytes().to_vec(),
             payloads: vec![serde_json::to_vec(&payload).unwrap()],
         };
@@ -368,8 +392,8 @@ mod tests {
         let server = Risc0Server::new();
 
         let execute_request = ExecuteTaskRequest {
-            project_id: 1,
-            project_version: "".to_string(),
+            project_id: "test1".to_string(),
+            project_version: "1.0".to_string(),
             task_id: "".as_bytes().to_vec(),
             payloads: vec![], // Empty payload
         };

@@ -16,17 +16,17 @@ func TestProverManager(t *testing.T) {
 
 	t.Run("new project", func(t *testing.T) {
 		// Test creating a new project
-		err := manager.NewProject(1, circuitData, pkData)
+		err := manager.NewProject("1", "v1", circuitData, pkData)
 		require.NoError(t, err)
 
 		// Test creating a duplicate project
-		err = manager.NewProject(1, circuitData, pkData)
+		err = manager.NewProject("1", "v1", circuitData, pkData)
 		require.NoError(t, err)
 	})
 
 	t.Run("exec project", func(t *testing.T) {
 		// Create a project first
-		err := manager.NewProject(2, circuitData, pkData)
+		err := manager.NewProject("2", "v1", circuitData, pkData)
 		require.NoError(t, err)
 
 		// Marshal the witness to bytes
@@ -34,7 +34,7 @@ func TestProverManager(t *testing.T) {
 		require.NoError(t, err)
 
 		// Execute the proving task
-		proof, err := manager.Exec(2, witBytes)
+		proof, err := manager.Exec("2", "v1", witBytes)
 		require.NoError(t, err)
 		require.NotEmpty(t, proof)
 	})
@@ -44,13 +44,13 @@ func TestProverManager(t *testing.T) {
 		witBytes, _ := wit.MarshalBinary()
 
 		// Try to execute a non-existent project
-		_, err := manager.Exec(999, witBytes)
+		_, err := manager.Exec("999", "v1", witBytes)
 		require.Error(t, err)
 	})
 
 	t.Run("exec with invalid witness", func(t *testing.T) {
 		// Create a project
-		err := manager.NewProject(3, circuitData, pkData)
+		err := manager.NewProject("3", "v1", circuitData, pkData)
 		require.NoError(t, err)
 
 		// Create an invalid witness
@@ -66,7 +66,7 @@ func TestProverManager(t *testing.T) {
 		require.NoError(t, err)
 
 		// Execute with invalid witness should fail
-		_, err = manager.Exec(3, invalidWitBytes)
+		_, err = manager.Exec("3", "v1", invalidWitBytes)
 		require.Error(t, err)
 	})
 }

@@ -9,7 +9,7 @@ service VM {
 }
 
 message NewProjectRequest {
-    uint64 projectID = 1;
+    string projectID = 1;
     string projectVersion = 2;
     bytes binary = 3;
     bytes metadata = 4;
@@ -18,7 +18,7 @@ message NewProjectRequest {
 message NewProjectResponse {}
 
 message ExecuteTaskRequest {
-    uint64 projectID = 1;
+    string projectID = 1;
     string projectVersion = 2;
     bytes taskID = 3;
     repeated bytes payloads = 4;
