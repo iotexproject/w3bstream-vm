@@ -9,11 +9,16 @@ import (
 	"github.com/consensys/gnark/backend/groth16"
 	"github.com/consensys/gnark/backend/witness"
 	"github.com/consensys/gnark/constraint"
+	"github.com/consensys/gnark/std"
 )
 
 type Groth16Prover struct {
 	circuit    constraint.ConstraintSystem
 	provingKey groth16.ProvingKey
+}
+
+func init() {
+	std.RegisterHints()
 }
 
 func (p *Groth16Prover) LoadCircuit(b []byte) error {

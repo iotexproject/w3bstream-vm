@@ -11,17 +11,22 @@ import (
 	"github.com/consensys/gnark/backend/witness"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/r1cs"
+	"github.com/consensys/gnark/std/math/uints"
 	"github.com/iotexproject/w3bstream-vm/gnark-server/prover"
 	"github.com/stretchr/testify/require"
 )
 
 type addCircuit struct {
-	X frontend.Variable
-	Y frontend.Variable `gnark:",public"`
+	X uints.U32
+	Y uints.U32 `gnark:",public"`
 }
 
 func (circuit *addCircuit) Define(api frontend.API) error {
-	api.AssertIsEqual(circuit.Y, api.Add(circuit.X, circuit.X))
+	uapi, err := uints.New[uints.U32](api)
+	if err != nil {
+		return err
+	}
+	uapi.AssertEq(circuit.X, circuit.Y)
 	return nil
 }
 
@@ -37,8 +42,8 @@ func setupaddCircuit(t *testing.T) ([]byte, []byte, witness.Witness, groth16.Ver
 
 	// Create witness
 	assignment := &addCircuit{
-		X: 42,
-		Y: 84,
+		X: uints.NewU32(0x12345678),
+		Y: uints.NewU32(0x12345678),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	require.NoError(t, err)

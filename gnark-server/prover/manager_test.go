@@ -6,6 +6,7 @@ import (
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/witness"
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/math/uints"
 	"github.com/iotexproject/w3bstream-vm/gnark-server/prover"
 	"github.com/stretchr/testify/require"
 )
@@ -55,8 +56,8 @@ func TestProverManager(t *testing.T) {
 
 		// Create an invalid witness
 		invalidAssignment := &addCircuit{
-			X: 42,
-			Y: 100, // This should be 84 (2*42)
+			X: uints.NewU32(0x12345678),
+			Y: uints.NewU32(0x1234567),
 		}
 		invalidWitness, err := frontend.NewWitness(invalidAssignment, ecc.BN254.ScalarField())
 		require.NoError(t, err)
