@@ -9,7 +9,9 @@ import (
 	"github.com/consensys/gnark/backend/groth16"
 	"github.com/consensys/gnark/backend/witness"
 	"github.com/consensys/gnark/constraint"
+	"github.com/consensys/gnark/constraint/solver"
 	"github.com/consensys/gnark/std"
+	"github.com/consensys/gnark/std/math/uints"
 )
 
 type Groth16Prover struct {
@@ -42,5 +44,20 @@ func (p *Groth16Prover) LoadProvingKey(b []byte) error {
 }
 
 func (p *Groth16Prover) Prove(wit witness.Witness) (groth16.Proof, error) {
-	return groth16.Prove(p.circuit, p.provingKey, wit, backend.WithProverHashToFieldFunction(sha256.New()))
+	return groth16.Prove(p.circuit, p.provingKey, wit,
+		backend.WithProverHashToFieldFunction(sha256.New()),
+		backend.WithSolverOptions(solver.WithHints(getAllHints()...)),
+	)
+}
+
+func getAllHints() []solver.Hint {
+	hints := [][]solver.Hint{
+		uints.GetHints(),
+	}
+
+	allHints := make([]solver.Hint, 0)
+	for _, h := range hints {
+		allHints = append(allHints, h...)
+	}
+	return allHints
 }
