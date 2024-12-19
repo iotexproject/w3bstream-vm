@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"net"
 
 	"github.com/iotexproject/w3bstream-vm/gnark-server/api"
@@ -23,7 +24,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.MaxRecvMsgSize(math.MaxInt32))
 	proto.RegisterVMServer(s, api.NewServer())
 
 	log.Printf("server listening at %v\n", lis.Addr())
